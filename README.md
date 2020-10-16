@@ -1,2 +1,3 @@
-# RTOS
-Edge computing and FreeRTOS examples
+# FreeRTOS and Edge Computing Repository
+
+The early vision of the edge-computing paradigm was to push computation and storage closer to the edge of the internet. In the 1990’s among the first systems that follow such line of thought were the content delivery systems. i.e. Akamia (Sherman et. al., 2005). Today, there is a much broader vision for edge-computing. Nodes at the edge may be aware, persuade, interact, decide, and collaborate, among other classes of capabilities. Many specializations and disciplines contribute to this vision. Perhaps, the most predominant are systems and artificial intelligence. This repository aims at integrating both by showing examples that address system and AI examples in STM32 platforms.
