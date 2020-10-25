@@ -106,3 +106,8 @@ Pins are connected as described in Table I. I listed the pin layouts  the projec
   </tr>
 </table>
 
+Following Graham $\alpha | \beta | \gamma$ notation for scheduling problems, 
+- The code generation process.
+- Single aperiodic task execution + preemptive creation and execution in a preemptive execution model.
+-
+-  
