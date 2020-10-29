@@ -109,6 +109,5 @@ Pins are connected as described in Table I. I listed the pin layouts  the projec
 Following Graham $\alpha | \beta | \gamma$ notation for scheduling problems, 
 
 - Simple code generation example.
-- $P|pmnt|$, single task persistent task on a preemptive execution context.
--
--  
+- Single task; preemptive scheduling.
+- Multiple tasks; preemptive scheduling.  
