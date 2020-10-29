@@ -108,7 +108,7 @@ Pins are connected as described in Table I. I listed the pin layouts  the projec
 
 Following Graham $\alpha | \beta | \gamma$ notation for scheduling problems, 
 
-- The code generation process.
-- Single aperiodic task execution + preemptive creation and execution in a preemptive execution model.
+- Simple code generation example.
+- $P|pmnt|$, single task persistent task on a preemptive execution context.
 -
 -  
