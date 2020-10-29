@@ -106,8 +106,9 @@ Pins are connected as described in Table I. I listed the pin layouts  the projec
   </tr>
 </table>
 
-Following Graham $\alpha | \beta | \gamma$ notation for scheduling problems, 
+The repository contains the following examples, 
 
 - Simple code generation example.
-- Single task; preemptive scheduling.
-- Multiple tasks; preemptive scheduling.  
+- P|pmnt|; Single task; preemptive scheduling.
+- P|pmnt|; Multiple tasks; preemptive scheduling. 
+- P|pmnt,p_j=p|; Single task, constant task duration; premptive scheduling.
