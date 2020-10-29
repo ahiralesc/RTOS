@@ -109,6 +109,6 @@ Pins are connected as described in Table I. I listed the pin layouts  the projec
 The repository contains the following examples, 
 
 - Simple code generation example.
-- P|pmnt|; Single task; preemptive scheduling.
-- P|pmnt|; Multiple tasks; preemptive scheduling. 
-- P|pmnt,p_j=p|; Single task, constant task duration; premptive scheduling.
+- 1|r_j,pmnt|; Single task; the task is revealed at its release time; preemptive scheduling.
+- 1|r_j,pmnt|; Multiple tasks; tasks are revealed at their release times; preemptive scheduling. 
+- 1|r_j,p_j=p,pmnt|; Single task, the task is revealed at its release time; constant task duration; premptive scheduling.
