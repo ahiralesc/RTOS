@@ -112,5 +112,6 @@ The scheduling problems are presented following [Graham et. al. notation](https:
 - 1|r_j,pmnt|; Single task; the task is revealed at its release time; preemptive scheduling; See E1F767ZIV1_Task_creation.
 - 1|r_j,pmnt|; Multiple tasks; tasks are revealed at their release times; preemptive scheduling. See E2F767ZIV1_Multiple_tasks
 - 1|r_j,p_j=p,pmnt|; Single task, the task is revealed at its release time; constant task duration; premptive scheduling. See E2F767ZIV1_Periodic_task.
-- 1|r_f,w_j,pmnt|; Two weighted tasks; preemptive scheduling; See E4F767ZIV1_Priority_preemptive_sch.
-- 
+- 1|r_j,w_j,pmnt|; Two weighted tasks; preemptive scheduling; See E4F767ZIV1_Priority_preemptive_sch.
+- 1|r_j,w_j,pmnt|; Two weighted tasks; preemptive scheduling; See E5F767ZIV1_UART_PPS. It also ilustrates how to use UART communication. 
+- 1|r_j,w_j,pmnt|; Two tasks; preemptive scheduling; Ilustrates how a shared function produces contention when not protected. See E6F767ZIV1_Contention
