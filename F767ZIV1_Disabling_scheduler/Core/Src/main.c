@@ -231,9 +231,9 @@ void toggleGreenHook(void const * argument)
 	{
 		HAL_GPIO_WritePin(EGreen_GPIO_Port, EGreen_Pin, GPIO_PIN_SET);
 		osDelay(3000);
-		taskENTER_CRITICAL();
+		vTaskSuspendAll();
 		shared_function();
-		taskEXIT_CRITICAL();
+		xTaskResumeAll();
 		HAL_GPIO_WritePin(EGreen_GPIO_Port, EGreen_Pin, GPIO_PIN_RESET);
 		osDelay(500);
 	}
@@ -245,20 +245,20 @@ void toggleGreenHook(void const * argument)
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_toggleRedHook */
 void toggleRedHook(void const * argument)
 {
 	for(;;)
 	{
 		HAL_GPIO_WritePin(ERed_GPIO_Port, ERed_Pin, GPIO_PIN_SET);
 		osDelay(1000);
-		taskENTER_CRITICAL();
+		vTaskSuspendAll();
 		shared_function();
-		taskEXIT_CRITICAL();
+		xTaskResumeAll();
 		HAL_GPIO_WritePin(ERed_GPIO_Port, ERed_Pin, GPIO_PIN_RESET);
 		osDelay(500);
 	}
 }
+/* USER CODE END Header_toggleRedHook */
 
 
 
