@@ -107,12 +107,10 @@ Pins are connected as described in Table I. I listed the pin layouts  the projec
   </tr>
 </table>
 
-The scheduling problems are presented following [Graham et. al. notation](https://en.wikipedia.org/wiki/Notation_for_theoretic_scheduling_problems) for theoretic scheduling problems. 
+Following[Graham et. al. notation](https://en.wikipedia.org/wiki/Notation_for_theoretic_scheduling_problems) for theoretic scheduling problems. Most of the projects are classified as $1|r_j, w_j, pmnt$ with $1$ processing unit, $r_j$ tasks released times are known, $w_j$ tasks priorities are given, and pmnt preemtions are allowed. In each project folder comes with a PDF file that defines the hardware and operating system setup. The following table describes the problem model that each project addressed. 
 
-- Simple code generation example.
-- 1|r_j,pmnt|; Single persistent task; the task is revealed at its release time; preemptive scheduling; See E1F767ZIV1_Task_creation.
-- 1|r_j,pmnt|; Multiple tasks; tasks are revealed at their release times; preemptive scheduling. See E2F767ZIV1_Multiple_tasks
-- 1|r_j,p_j=p,pmnt|; Single task, the task is revealed at its release time; constant task duration; premptive scheduling. See E2F767ZIV1_Periodic_task.
-- 1|r_j,w_j,pmnt|; Two weighted tasks; preemptive scheduling; See E4F767ZIV1_Priority_preemptive_sch.
-- 1|r_j,w_j,pmnt|; Two weighted tasks; preemptive scheduling; See E5F767ZIV1_UART_PPS. It also ilustrates how to use UART communication. 
-- 1|r_j,w_j,pmnt|; Two tasks; preemptive scheduling; Ilustrates how a shared function produces contention when not protected. See E6F767ZIV1_Contention
+|Project label|Problem model|
+|:---|:---|
+|F767ZIV1_Persistent_task|A single persistent toggles an LED at 0.5Hz. Premptions are allowed.|
+|F767ZIV1_Periodic_task|A single periodic task toggles an LED at 0.5Hz. The task is periodically executed each 2s. Premptions are allowed.|
+|F767ZIV1_Contention|Two periodic tasks execute. They have different release times and durations. Contention, when accesing a shared function, is illustrated by enabling a blue LED. Preemptions are allowed.|
