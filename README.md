@@ -107,10 +107,13 @@ Pins are connected as described in Table I. I listed the pin layouts for differe
   </tr>
 </table>
 
-Following[Graham et. al. notation](https://en.wikipedia.org/wiki/Notation_for_theoretic_scheduling_problems) for theoretic scheduling problems. Most of the projects are classified as 1|r_j, w_j, pmnt with 1 processing unit, r_j tasks released times are known, w_j tasks priorities are given, and pmnt preemtions are allowed. In each project folder comes with a PDF file that defines the hardware and operating system setup. The following table describes the problem model that each project addressed. 
+Following [Graham et. al. notation](https://en.wikipedia.org/wiki/Notation_for_theoretic_scheduling_problems) for theoretic scheduling problems. Most of the projects are classified as 1|r_j, w_j, pmnt with 1 processing unit, r_j tasks released times are known, w_j tasks priorities are given, and pmnt preemtions are allowed. In each project folder comes with a PDF file that defines the hardware and operating system setup. The following table describes the problem model that each project addressed. 
 
 |Project label|Problem model|
 |:---|:---|
 |F767ZIV1_Persistent_task|A single persistent toggles an LED at 0.5Hz. Premptions are allowed.|
 |F767ZIV1_Periodic_task|A single periodic task toggles an LED at 0.5Hz. The task is periodically executed each 2s. Premptions are allowed.|
+|F767ZIV1_PPM|Two periodic tasks execute. The firt executes for 4s and toggles an LED at 20Hz, the second task executes for 1s toggles an LED at 20Hz. Equal task priorities are considered. Priority preemptive is applied|
 |F767ZIV1_Contention|Two periodic tasks execute. They have different release times and durations. Contention, when accesing a shared function, is illustrated by enabling a blue LED. Preemptions are allowed.|
+|F767ZIV1_Disabling_interrupts|Contention problems observed in F767ZIV1_Contention are solved by disabling interrupts|
+|F767ZIV1_Disabling_scheduler|Contention problems observed in F767ZIV1_Contention are solved by disabling the scheduler|
