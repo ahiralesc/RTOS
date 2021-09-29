@@ -749,70 +749,71 @@ void toggleRedHook(void const * argument)
  8000788:	af00      	add	r7, sp, #0
  800078a:	6078      	str	r0, [r7, #4]
 	for(;;)
-{
-	HAL_GPIO_WritePin(ERed_GPIO_Port, ERed_Pin, GPIO_PIN_SET);
+	{
+		HAL_GPIO_WritePin(ERed_GPIO_Port, ERed_Pin, GPIO_PIN_SET);
  800078c:	2201      	movs	r2, #1
  800078e:	2108      	movs	r1, #8
  8000790:	480b      	ldr	r0, [pc, #44]	; (80007c0 <toggleRedHook+0x3c>)
  8000792:	f000 fc07 	bl	8000fa4 <HAL_GPIO_WritePin>
-	osDelay(1000);
+		osDelay(1000);
  8000796:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
  800079a:	f001 fbb0 	bl	8001efe <osDelay>
-	taskENTER_CRITICAL();
+		taskENTER_CRITICAL();
  800079e:	f002 faab 	bl	8002cf8 <vPortEnterCritical>
-	shared_function();
+		shared_function();
  80007a2:	f000 f80f 	bl	80007c4 <shared_function>
-	taskEXIT_CRITICAL();
+		taskEXIT_CRITICAL();
  80007a6:	f002 fad9 	bl	8002d5c <vPortExitCritical>
-	HAL_GPIO_WritePin(ERed_GPIO_Port, ERed_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(ERed_GPIO_Port, ERed_Pin, GPIO_PIN_RESET);
  80007aa:	2200      	movs	r2, #0
  80007ac:	2108      	movs	r1, #8
  80007ae:	4804      	ldr	r0, [pc, #16]	; (80007c0 <toggleRedHook+0x3c>)
  80007b0:	f000 fbf8 	bl	8000fa4 <HAL_GPIO_WritePin>
-	osDelay(500);
+		osDelay(500);
  80007b4:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
  80007b8:	f001 fba1 	bl	8001efe <osDelay>
-	HAL_GPIO_WritePin(ERed_GPIO_Port, ERed_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(ERed_GPIO_Port, ERed_Pin, GPIO_PIN_SET);
  80007bc:	e7e6      	b.n	800078c <toggleRedHook+0x8>
  80007be:	bf00      	nop
  80007c0:	40020800 	.word	0x40020800
 
 080007c4 <shared_function>:
+	}
 }
-}
+
 
 
 void shared_function() {
  80007c4:	b580      	push	{r7, lr}
  80007c6:	af00      	add	r7, sp, #0
-if( flag == 1 ) {
+	if( flag == 1 ) {
  80007c8:	4b0d      	ldr	r3, [pc, #52]	; (8000800 <shared_function+0x3c>)
  80007ca:	681b      	ldr	r3, [r3, #0]
  80007cc:	2b01      	cmp	r3, #1
  80007ce:	d10f      	bne.n	80007f0 <shared_function+0x2c>
-	flag = 0;
+		flag = 0;
  80007d0:	4b0b      	ldr	r3, [pc, #44]	; (8000800 <shared_function+0x3c>)
  80007d2:	2200      	movs	r2, #0
  80007d4:	601a      	str	r2, [r3, #0]
-	HAL_Delay(3000);
+		HAL_Delay(3000);
  80007d6:	f640 30b8 	movw	r0, #3000	; 0xbb8
  80007da:	f000 f935 	bl	8000a48 <HAL_Delay>
-	flag = 1;
+		flag = 1;
  80007de:	4b08      	ldr	r3, [pc, #32]	; (8000800 <shared_function+0x3c>)
  80007e0:	2201      	movs	r2, #1
  80007e2:	601a      	str	r2, [r3, #0]
-	HAL_GPIO_WritePin(EBlue_GPIO_Port, EBlue_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(EBlue_GPIO_Port, EBlue_Pin, GPIO_PIN_RESET);
  80007e4:	2200      	movs	r2, #0
  80007e6:	2101      	movs	r1, #1
  80007e8:	4806      	ldr	r0, [pc, #24]	; (8000804 <shared_function+0x40>)
  80007ea:	f000 fbdb 	bl	8000fa4 <HAL_GPIO_WritePin>
-} else {
-	// Show an alert turning the blue LED on
-	HAL_GPIO_WritePin(EBlue_GPIO_Port, EBlue_Pin, GPIO_PIN_SET);
-}
+	} else {
+		// Show an alert turning the blue LED on
+		HAL_GPIO_WritePin(EBlue_GPIO_Port, EBlue_Pin, GPIO_PIN_SET);
+	}
 }
  80007ee:	e004      	b.n	80007fa <shared_function+0x36>
-	HAL_GPIO_WritePin(EBlue_GPIO_Port, EBlue_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(EBlue_GPIO_Port, EBlue_Pin, GPIO_PIN_SET);
  80007f0:	2201      	movs	r2, #1
  80007f2:	2101      	movs	r1, #1
  80007f4:	4803      	ldr	r0, [pc, #12]	; (8000804 <shared_function+0x40>)
