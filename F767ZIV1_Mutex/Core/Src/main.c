@@ -37,7 +37,8 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+void shared_function();
+int flag = 1;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -249,13 +250,16 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_toggleRedHook */
 void toggleRedHook(void const * argument)
 {
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END 5 */
+	for(;;)
+	{
+		HAL_GPIO_WritePin(ERed_GPIO_Port, ERed_Pin, GPIO_PIN_SET);
+		osMutexWait(sharedFunctionMutexHandle, 1000);
+		shared_function();
+		osMutexRelease(sharedFunctionMutexHandle);
+		osDelay(550);
+		HAL_GPIO_WritePin(ERed_GPIO_Port, ERed_Pin, GPIO_PIN_RESET);
+		osDelay(550);
+	 }
 }
 
 /* USER CODE BEGIN Header_toggleGreenHook */
@@ -267,13 +271,16 @@ void toggleRedHook(void const * argument)
 /* USER CODE END Header_toggleGreenHook */
 void toggleGreenHook(void const * argument)
 {
-  /* USER CODE BEGIN toggleGreenHook */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END toggleGreenHook */
+	for(;;)
+	{
+		HAL_GPIO_WritePin(EGreen_GPIO_Port, EGreen_Pin, GPIO_PIN_SET);
+		osMutexWait(sharedFunctionMutexHandle, 1000);
+		shared_function();
+		osMutexRelease(sharedFunctionMutexHandle);
+		osDelay(200);
+		HAL_GPIO_WritePin(EGreen_GPIO_Port, EGreen_Pin, GPIO_PIN_RESET);
+		osDelay(200);
+	}
 }
 
 /* USER CODE BEGIN Header_toggleYellowHook */
@@ -285,14 +292,27 @@ void toggleGreenHook(void const * argument)
 /* USER CODE END Header_toggleYellowHook */
 void toggleYellowHook(void const * argument)
 {
-  /* USER CODE BEGIN toggleYellowHook */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END toggleYellowHook */
+	for(;;)
+	{
+		HAL_GPIO_TogglePin(EYellow_GPIO_Port, EYellow_Pin);
+		osDelay(50);
+	}
 }
+
+
+
+void shared_function() {
+	if( flag == 1 ) {
+		flag = 0;
+		HAL_GPIO_WritePin(EBlue_GPIO_Port, EBlue_Pin, GPIO_PIN_RESET);
+		HAL_Delay(1000);
+		flag = 1;
+	} else {
+		// Show an alert turning the blue LED on
+		HAL_GPIO_WritePin(EBlue_GPIO_Port, EBlue_Pin, GPIO_PIN_SET);
+	}
+}
+
 
  /**
   * @brief  Period elapsed callback in non blocking mode
