@@ -42,7 +42,9 @@
 
 /* Private variables ---------------------------------------------------------*/
 
-osThreadId defaultTaskHandle;
+osThreadId toggleGreenHandle;
+osThreadId toggleYellowHandle;
+osThreadId toggleRedHandle;
 osSemaphoreId sharedFunctionBSHandle;
 /* USER CODE BEGIN PV */
 
@@ -51,7 +53,9 @@ osSemaphoreId sharedFunctionBSHandle;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-void StartDefaultTask(void const * argument);
+void toggleGreenHook(void const * argument);
+void toggleYellowHook(void const * argument);
+void toggleRedHook(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -116,9 +120,17 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+  /* definition and creation of toggleGreen */
+  osThreadDef(toggleGreen, toggleGreenHook, osPriorityNormal, 0, 128);
+  toggleGreenHandle = osThreadCreate(osThread(toggleGreen), NULL);
+
+  /* definition and creation of toggleYellow */
+  osThreadDef(toggleYellow, toggleYellowHook, osPriorityAboveNormal, 0, 128);
+  toggleYellowHandle = osThreadCreate(osThread(toggleYellow), NULL);
+
+  /* definition and creation of toggleRed */
+  osThreadDef(toggleRed, toggleRedHook, osPriorityNormal, 0, 128);
+  toggleRedHandle = osThreadCreate(osThread(toggleRed), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -228,14 +240,14 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartDefaultTask */
+/* USER CODE BEGIN Header_toggleGreenHook */
 /**
-  * @brief  Function implementing the defaultTask thread.
+  * @brief  Function implementing the toggleGreen thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const * argument)
+/* USER CODE END Header_toggleGreenHook */
+void toggleGreenHook(void const * argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
@@ -244,6 +256,42 @@ void StartDefaultTask(void const * argument)
     osDelay(1);
   }
   /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_toggleYellowHook */
+/**
+* @brief Function implementing the toggleYellow thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_toggleYellowHook */
+void toggleYellowHook(void const * argument)
+{
+  /* USER CODE BEGIN toggleYellowHook */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END toggleYellowHook */
+}
+
+/* USER CODE BEGIN Header_toggleRedHook */
+/**
+* @brief Function implementing the toggleRed thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_toggleRedHook */
+void toggleRedHook(void const * argument)
+{
+  /* USER CODE BEGIN toggleRedHook */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END toggleRedHook */
 }
 
  /**

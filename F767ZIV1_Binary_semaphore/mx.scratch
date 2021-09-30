@@ -32,7 +32,7 @@
           </memories>
           <startup>C:\Users\ahiralesc\STM32Cube\Repository\STM32Cube_FW_F7_V1.16.0\Drivers\CMSIS\Device\ST\STM32F7xx\Source\Templates\gcc\startup_stm32f767xx.s</startup>
           <LinkSettings>
-            <icfloc>1</icfloc>
+            <icfloc />
             <LinkAdditionalLibs />
           </LinkSettings>
           <heapSize>0x200</heapSize>

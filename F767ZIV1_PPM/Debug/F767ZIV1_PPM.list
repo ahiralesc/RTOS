@@ -425,7 +425,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of toggleGreen */
-  osThreadDef(toggleGreen, toggleGreenHook, osPriorityNormal, 0, 128);
+  osThreadDef(toggleGreen, toggleGreenHook, osPriorityBelowNormal, 0, 128);
  8000586:	4b13      	ldr	r3, [pc, #76]	; (80005d4 <main+0x60>)
  8000588:	f107 041c 	add.w	r4, r7, #28
  800058c:	461d      	mov	r5, r3
@@ -443,7 +443,7 @@ int main(void)
  80005aa:	601a      	str	r2, [r3, #0]
 
   /* definition and creation of toggleRed */
-  osThreadDef(toggleRed, toggleRedHook, osPriorityNormal, 0, 128);
+  osThreadDef(toggleRed, toggleRedHook, osPriorityRealtime, 0, 128);
  80005ac:	4b0b      	ldr	r3, [pc, #44]	; (80005dc <main+0x68>)
  80005ae:	463c      	mov	r4, r7
  80005b0:	461d      	mov	r5, r3

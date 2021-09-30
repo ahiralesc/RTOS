@@ -113,11 +113,11 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of toggleGreen */
-  osThreadDef(toggleGreen, toggleGreenHook, osPriorityNormal, 0, 128);
+  osThreadDef(toggleGreen, toggleGreenHook, osPriorityBelowNormal, 0, 128);
   toggleGreenHandle = osThreadCreate(osThread(toggleGreen), NULL);
 
   /* definition and creation of toggleRed */
-  osThreadDef(toggleRed, toggleRedHook, osPriorityNormal, 0, 128);
+  osThreadDef(toggleRed, toggleRedHook, osPriorityRealtime, 0, 128);
   toggleRedHandle = osThreadCreate(osThread(toggleRed), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
