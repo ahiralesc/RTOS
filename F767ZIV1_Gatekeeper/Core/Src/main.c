@@ -20,6 +20,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include <string.h>
+#include <stdlib.h> // for rand
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -45,11 +47,11 @@
 UART_HandleTypeDef huart3;
 
 osThreadId writerOneHandle;
-osThreadId gateKeeperHandle;
 osThreadId writerTwoHandle;
+osThreadId gateKeeperHandle;
 osMessageQId usartQueueHandle;
 /* USER CODE BEGIN PV */
-
+osPoolId mpool;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,8 +59,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 void writerOneHook(void const * argument);
-void gateKeeperHook(void const * argument);
 void writerTwoHook(void const * argument);
+void gateKeeperHook(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -67,6 +69,16 @@ void writerTwoHook(void const * argument);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
+/*
+ * The message data structure that a thread will put in the message queue.
+ * The address of the message is placed in the queue. Not the actual message.
+ */
+typedef struct {
+	uint8_t buffer[55];
+	uint8_t td;
+	int    priority;
+} MSG_T;
 /* USER CODE END 0 */
 
 /**
@@ -116,7 +128,11 @@ int main(void)
 
   /* Create the queue(s) */
   /* definition and creation of usartQueue */
-  osMessageQDef(usartQueue, 16, uint16_t);
+
+  osPoolDef(mpool, 16,  MSG_T);
+  mpool = osPoolCreate(osPool(mpool));
+
+  osMessageQDef(usartQueue, 16, MSG_T);
   usartQueueHandle = osMessageCreate(osMessageQ(usartQueue), NULL);
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -126,15 +142,15 @@ int main(void)
   /* Create the thread(s) */
   /* definition and creation of writerOne */
   osThreadDef(writerOne, writerOneHook, osPriorityNormal, 0, 128);
-  writerOneHandle = osThreadCreate(osThread(writerOne), NULL);
+  writerOneHandle = osThreadCreate(osThread(writerOne), (void *) 0);
+
+  /* definition and creation of writerTwo */
+  osThreadDef(writerTwo, writerTwoHook, osPriorityNormal, 0, 128);
+  writerTwoHandle = osThreadCreate(osThread(writerTwo), (void *) 1);
 
   /* definition and creation of gateKeeper */
   osThreadDef(gateKeeper, gateKeeperHook, osPriorityNormal, 0, 128);
   gateKeeperHandle = osThreadCreate(osThread(gateKeeper), NULL);
-
-  /* definition and creation of writerTwo */
-  osThreadDef(writerTwo, writerTwoHook, osPriorityNormal, 0, 128);
-  writerTwoHandle = osThreadCreate(osThread(writerTwo), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -263,32 +279,26 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_writerOneHook */
 void writerOneHook(void const * argument)
 {
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END 5 */
+	const TickType_t interval = 0x20;
+	//int index = (int) argument;
+
+	for(;;)
+	{
+		/* Allocate memory for the message */
+		 MSG_T *msg = osPoolAlloc(mpool);
+		strcpy(msg->buffer, "Writer 1 : -----------------------------------\r\n");
+		msg->td       = 1;
+		msg->priority = 2;
+
+		/* Place the message pointer in the message queue */
+		osMessagePut(usartQueueHandle, (uint32_t) msg,  osWaitForever);
+
+		/* Wait a random amount of time */
+		//HAL_Delay(rand() % interval);
+		HAL_Delay(1000);
+	}
 }
 
-/* USER CODE BEGIN Header_gateKeeperHook */
-/**
-* @brief Function implementing the gateKeeper thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_gateKeeperHook */
-void gateKeeperHook(void const * argument)
-{
-  /* USER CODE BEGIN gateKeeperHook */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END gateKeeperHook */
-}
 
 /* USER CODE BEGIN Header_writerTwoHook */
 /**
@@ -299,13 +309,51 @@ void gateKeeperHook(void const * argument)
 /* USER CODE END Header_writerTwoHook */
 void writerTwoHook(void const * argument)
 {
-  /* USER CODE BEGIN writerTwoHook */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END writerTwoHook */
+	const TickType_t interval = 0x20;
+	// int index = (int) argument;
+
+	for(;;)
+	{
+		/* Allocate memory for the message */
+		 MSG_T *msg = osPoolAlloc(mpool);
+		strcpy(msg->buffer, "Writer 2 : ooooooooooooooooooooooooooooooooooo\r\n");
+		msg->td       = 2;
+		msg->priority = 2;
+
+		/* Place the message pointer in the message queue */
+		xQueueSendToBack(usartQueueHandle, (uint32_t) msg,  osWaitForever);
+
+		/* wait a random amount of time */
+		//HAL_Delay(rand() % interval);
+		HAL_Delay(2000);
+	}
+}
+
+
+
+/* USER CODE BEGIN Header_gateKeeperHook */
+/**
+* @brief Function implementing the gateKeeper thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_gateKeeperHook */
+void gateKeeperHook(void const * argument)
+{
+	 MSG_T* msg;
+	osEvent  evt;
+
+	for(;;)
+	{
+		evt = osMessageGet(usartQueueHandle,  osWaitForever);
+		/*if(evt.status == osEventMessage) {
+			msg = evt.value.p;
+			//HAL_UART_Transmit(&huart3, msg->buffer, 53, 100);
+			 HAL_UART_Transmit(&huart3, "Hello from the board\n\r", 24, 100);
+			osPoolFree(mpool, msg);
+		}*/
+		 HAL_UART_Transmit(&huart3, "Hello from the board\n\r", 24, 100);
+	}
 }
 
  /**
@@ -328,6 +376,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
   /* USER CODE END Callback 1 */
 }
+
 
 /**
   * @brief  This function is executed in case of error occurrence.

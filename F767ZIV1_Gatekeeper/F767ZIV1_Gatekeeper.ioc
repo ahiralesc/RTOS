@@ -80,6 +80,7 @@ RCC.AHBFreq_Value=16000000
 RCC.TIM2Freq_Value=72000000
 Mcu.Pin0=PD8
 Mcu.Pin1=PD9
+GPIO.groupedBy=Group By Peripherals
 Mcu.Pin2=PA13
 Mcu.Pin3=PA14
 RCC.USART3Freq_Value=8000000
