@@ -20,7 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-
+#include "stdlib.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -257,11 +257,13 @@ void toggle(GPIO_TypeDef*  GPIOx, uint16_t GPIO_Pin, uint32_t frequency, int dur
   */
 /* USER CODE END Header_greenProducerHook */
 void greenProducerHook(void const * argument)
-{
+{	int delay = 0;
+
 	for(;;){
 		toggle(EGreen_GPIO_Port, EGreen_Pin, (uint32_t) 100, 2000);
 		osSignalSet(blueConsumerHandle, 0x01);
-		HAL_Delay(1000);
+		delay  = rand() % 1000 + 1000;
+		HAL_Delay(delay);
 	}
 }
 
@@ -273,11 +275,12 @@ void greenProducerHook(void const * argument)
 */
 /* USER CODE END Header_redProducerHook */
 void redProducerHook(void const * argument)
-{
+{	int delay = 0;
 	for(;;){
 		toggle(ERed_GPIO_Port, ERed_Pin, (uint32_t) 100, 2000);
 		osSignalSet(blueConsumerHandle, 0x10);
-		HAL_Delay(1000);
+		delay  = rand() % 1000 + 1000;
+		HAL_Delay(delay);
 	}
 }
 
@@ -289,11 +292,12 @@ void redProducerHook(void const * argument)
 */
 /* USER CODE END Header_yellowProducerHook */
 void yellowProducerHook(void const * argument)
-{
+{	int delay = 0;
 	for(;;){
 		toggle(EYellow_GPIO_Port, EYellow_Pin, (uint32_t) 100, 2000);
 		osSignalSet(blueConsumerHandle, 0x100);
-		HAL_Delay(2000);
+		delay  = rand() % 1000 + 1000;
+		HAL_Delay(delay);
 	}
 }
 /* USER CODE BEGIN Header_blueConsumerHook */
