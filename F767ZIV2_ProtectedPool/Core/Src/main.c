@@ -42,18 +42,29 @@
 
 /* Private variables ---------------------------------------------------------*/
 
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
+/* Definitions for toggleGreen */
+osThreadId_t toggleGreenHandle;
+const osThreadAttr_t toggleGreen_attributes = {
+  .name = "toggleGreen",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
-/* Definitions for poolSemaphore */
-osSemaphoreId_t poolSemaphoreHandle;
-const osSemaphoreAttr_t poolSemaphore_attributes = {
-  .name = "poolSemaphore"
+/* Definitions for toggleRed */
+osThreadId_t toggleRedHandle;
+const osThreadAttr_t toggleRed_attributes = {
+  .name = "toggleRed",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 128 * 4
 };
+/* Definitions for rateControl */
+osThreadId_t rateControlHandle;
+const osThreadAttr_t rateControl_attributes = {
+  .name = "rateControl",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 128 * 4
+};
+/* Definitions for poolSemaphore */
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -61,7 +72,9 @@ const osSemaphoreAttr_t poolSemaphore_attributes = {
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-void StartDefaultTask(void *argument);
+void toggleGreenHook(void *argument);
+void toggleRedHook(void *argument);
+void rateControlHook(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -113,7 +126,7 @@ int main(void)
 
   /* Create the semaphores(s) */
   /* creation of poolSemaphore */
-  poolSemaphoreHandle = osSemaphoreNew(1, 1, &poolSemaphore_attributes);
+ // poolSemaphoreHandle = osSemaphoreNew(1, 1, &poolSemaphore_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -128,8 +141,14 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  /* creation of toggleGreen */
+  toggleGreenHandle = osThreadNew(toggleGreenHook, NULL, &toggleGreen_attributes);
+
+  /* creation of toggleRed */
+  toggleRedHandle = osThreadNew(toggleRedHook, NULL, &toggleRed_attributes);
+
+  /* creation of rateControl */
+  rateControlHandle = osThreadNew(rateControlHook, NULL, &rateControl_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -232,14 +251,14 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartDefaultTask */
+/* USER CODE BEGIN Header_toggleGreenHook */
 /**
-  * @brief  Function implementing the defaultTask thread.
+  * @brief  Function implementing the toggleGreen thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
+/* USER CODE END Header_toggleGreenHook */
+void toggleGreenHook(void *argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
@@ -248,6 +267,42 @@ void StartDefaultTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_toggleRedHook */
+/**
+* @brief Function implementing the toggleRed thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_toggleRedHook */
+void toggleRedHook(void *argument)
+{
+  /* USER CODE BEGIN toggleRedHook */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END toggleRedHook */
+}
+
+/* USER CODE BEGIN Header_rateControlHook */
+/**
+* @brief Function implementing the rateControl thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_rateControlHook */
+void rateControlHook(void *argument)
+{
+  /* USER CODE BEGIN rateControlHook */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END rateControlHook */
 }
 
  /**
