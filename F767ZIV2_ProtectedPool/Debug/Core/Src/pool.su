@@ -1,3 +1,0 @@
-pool.c:9:6:initiate_pool	8	static
-pool.c:14:6:set_rate	16	static
-pool.c:24:5:get_rate	16	static
