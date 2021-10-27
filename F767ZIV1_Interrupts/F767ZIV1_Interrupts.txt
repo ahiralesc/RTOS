@@ -1,0 +1,76 @@
+Configuration	F767ZIV1_Interrupts
+STM32CubeMX 	6.1.1
+Date	10/25/2021
+MCU	STM32F767ZITx
+
+
+
+PERIPHERALS	MODES	FUNCTIONS	PINS
+SYS	Serial Wire	SYS_JTCK-SWCLK	PA14
+SYS	Serial Wire	SYS_JTMS-SWDIO	PA13
+SYS	SysTick	SYS_VS_Systick	VP_SYS_VS_Systick
+TIM5	Internal Clock	TIM5_VS_ClockSourceINT	VP_TIM5_VS_ClockSourceINT
+USART3	Asynchronous	USART3_RX	PD9
+USART3	Asynchronous	USART3_TX	PD8
+
+
+
+Pin Nb	PINs	FUNCTIONs	LABELs
+2	PE3	GPIO_Output	
+13	PF3	GPIO_Output	EYellow
+26	PC0	GPIO_Output	EBlue
+29	PC3	GPIO_Output	ERed
+37	PA3	GPIO_Output	EGreen
+77	PD8	USART3_TX	
+78	PD9	USART3_RX	
+105	PA13	SYS_JTMS-SWDIO	
+109	PA14	SYS_JTCK-SWCLK	
+141	PE0	GPIO_EXTI0	
+PERIPHERALS	MODES	FUNCTIONS	PINS
+SYS	Serial Wire	SYS_JTCK-SWCLK	PA14
+SYS	Serial Wire	SYS_JTMS-SWDIO	PA13
+SYS	SysTick	SYS_VS_Systick	VP_SYS_VS_Systick
+TIM5	Internal Clock	TIM5_VS_ClockSourceINT	VP_TIM5_VS_ClockSourceINT
+USART3	Asynchronous	USART3_RX	PD9
+USART3	Asynchronous	USART3_TX	PD8
+
+
+
+Pin Nb	PINs	FUNCTIONs	LABELs
+2	PE3	GPIO_Output	
+13	PF3	GPIO_Output	EYellow
+26	PC0	GPIO_Output	EBlue
+29	PC3	GPIO_Output	ERed
+37	PA3	GPIO_Output	EGreen
+77	PD8	USART3_TX	
+78	PD9	USART3_RX	
+105	PA13	SYS_JTMS-SWDIO	
+109	PA14	SYS_JTCK-SWCLK	
+141	PE0	GPIO_EXTI0	
+
+
+
+SOFTWARE PROJECT
+
+Project Settings : 
+Project Name : F767ZIV1_Interrupts
+Project Folder : E:\Mysrc\EmbeddedSystems\RTOS\F767ZIV1_Interrupts
+Toolchain / IDE : STM32CubeIDE
+Firmware Package Name and Version : STM32Cube FW_F7 V1.16.0
+
+
+Code Generation Settings : 
+STM32Cube MCU packages and embedded software packs : Copy only the necessary library files
+Generate peripheral initialization as a pair of '.c/.h' files per peripheral : No
+Backup previously generated files when re-generating : No
+Delete previously generated files when not re-generated : Yes
+Set all free pins as analog (to optimize the power consumption) : No
+
+
+Toolchains Settings : 
+Compiler Optimizations : 
+
+
+
+
+
