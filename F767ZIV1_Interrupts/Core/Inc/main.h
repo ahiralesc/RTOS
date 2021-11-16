@@ -64,8 +64,6 @@ void Error_Handler(void);
 #define EBlue_GPIO_Port GPIOC
 #define ERed_Pin GPIO_PIN_3
 #define ERed_GPIO_Port GPIOC
-#define EGreen_Pin GPIO_PIN_3
-#define EGreen_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
