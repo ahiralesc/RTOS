@@ -1,4 +1,4 @@
-# Real Time Operating Systems (RTOS)
+# Super Real Time Operating Systems (RTOS) 
 
 This repository integrates theoretical and technical knowledge on how to build multitasking and real-time applications for STM32 architectures. The examples incrementally explore concurrency problems such as task creation, critical sections, inter-task communication, and many topics of interest. The examples were coded on the [STM32F767ZI](https://www.st.com/content/st_com/en/products/microcontrollers-microprocessors/stm32-32-bit-arm-cortex-mcus/stm32-high-performance-mcus/stm32f7-series/stm32f7x7/stm32f767zi.html) board. However, they should work on other STM32 base architectures. 
 
