@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdio.h>
+#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -58,6 +60,7 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/*uint8_t buffer[4];*/
 
 /* USER CODE END 0 */
 
@@ -68,6 +71,9 @@ static void MX_ADC1_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+
+	uint16_t raw;
+	char msg[10];
 
   /* USER CODE END 1 */
 
@@ -92,6 +98,8 @@ int main(void)
   MX_USART3_UART_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
+  /*HAL_UART_Receive_IT(&huart3, buffer, sizeof(buffer));*/
+  /*uint8_t buffer[] = "Hello from board2\r\n";*/
 
   /* USER CODE END 2 */
 
@@ -99,8 +107,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+	  // Get ADC value
+	  HAL_ADC_Start(&hadc1);
+	  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+	  raw = HAL_ADC_GetValue(&hadc1);
 
+    /* USER CODE END WHILE */
+	  sprintf(msg, "%hu\r\n", raw);
+	  HAL_StatusTypeDef status = HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), 100);
+	  if(status != HAL_OK);
+	  HAL_Delay(1000);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -247,7 +263,10 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+/*void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	HAL_UART_Receive_IT(&huart3, buffer, sizeof(buffer));
+	HAL_UART_Transmit_IT(&huart3, buffer, sizeof(buffer));
+}*/
 /* USER CODE END 4 */
 
 /**
