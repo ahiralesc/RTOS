@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=" " alt="logo" width="250" height="250"/>
+  <img src="./img/logo.png" alt="logo" width="250" height="250"/>
   <h1 align="center">F413ZHT6_MonitoreoDeCorrientes</h1>
 
 </p>
