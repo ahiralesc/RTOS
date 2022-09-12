@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="F413ZHT6_STM-SYS/img/STMSYS_logo.png" alt="logo" width="250" height="250"/>
+  <img src="https://github.com/Magnus1515/RTOS/blob/TrashMonitoringSystem/F413ZHT6_STM-SYS/img/STMSYS_logo.png?raw=true" alt="logo" width="250" height="250"/>
   <h1 align="center">F413ZHT6_STM-SYS</h1>
 </p>
 
