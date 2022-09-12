@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://cdn-icons-png.flaticon.com/512/3273/3273536.png" alt="logo" width="250" height="250"/>
+  <img src="RTOS/F413ZHT6_STM-SYS/img/STMSYS_logo.png" alt="logo" width="250" height="250"/>
   <h1 align="center">F413ZHT6_STM-SYS</h1>
 </p>
 
