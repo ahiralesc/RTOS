@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under BSD 3-Clause license,
@@ -58,11 +58,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define EBlue_Pin GPIO_PIN_0
-#define EBlue_GPIO_Port GPIOC
-#define EButton_Pin GPIO_PIN_3
-#define EButton_GPIO_Port GPIOC
-#define EButton_EXTI_IRQn EXTI3_IRQn
+#define IBlue_Pin GPIO_PIN_7
+#define IBlue_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
