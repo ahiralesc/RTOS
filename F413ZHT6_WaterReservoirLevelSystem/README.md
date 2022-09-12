@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://logo.png" alt="logo" width="250" height="250"/>
+  <img src="logo.png" title="Logo" width="400" height="400" />
   <h1 align="center">F413ZHT6_F413ZHT6_WaterReservoirLevelSystem
 </p>
 
