@@ -1,4 +1,4 @@
-<p align="center">5
+<p align="center">
   <img src="img/iStaySafe_LOGO.png" alt="logo" width="412.5" height="250"/>
   <h1 align="center">F413ZHT6_iStaySafe</h1>
 </p>
