@@ -8,5 +8,5 @@
 
 
 ## Authors
-- Gustavo Salazar - T0xxxxx - Github: https://github.com/gustav0924}
+- Gustavo Salazar - T025605 - Github: https://github.com/gustav0924}
 - Rodolfo Macías - T029902 
