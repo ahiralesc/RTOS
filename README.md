@@ -6,6 +6,7 @@ This project intends to implement a light sensor to measure large distances that
 
 The development chain will be a STM32Cube and a STM32CubeIDE. For UART serial communication, the Hercules or MobaXterm terminals will be used. The STM32 will be flashed with the Segger J-link debugger probe. The STM will use FreeRTOS to manage the sensor and to interpret the data collected.
 
+
 **Collaborators:**
 * Ivan Sanchez
 * Alex Machado
