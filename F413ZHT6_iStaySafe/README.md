@@ -10,4 +10,4 @@
 ## Authors
 - Cruz Salazar - T031044 - Github: https://github.com/danielCruzSalazar
 - Tomás Araujo - T033055 - Github: https://github.com/tomas193
-- Luis Ventura - T0_____ - Github: https://github.com/V3NTURA01
+- Luis Ventura - T034226 - Github: https://github.com/V3NTURA01
