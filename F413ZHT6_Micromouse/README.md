@@ -1,5 +1,5 @@
 <p align="center">
-  <img src= /../main/img/mouse.png?raw=true" alt="logo" width="250" height="250"/>
+  <img src= /main/img/mouse.png?raw=true" alt="logo" width="250" height="250"/>
   <h1 align="center">F413ZHT6_Micromouse</h1>
 </p>
 
