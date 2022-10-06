@@ -1,5 +1,5 @@
-<p align="center">
   ![Alt text](/img/mouse.png "Optional title")
+<p align="center">
   <h1 align="center">F413ZHT6_Micromouse</h1>
   
 </p>
