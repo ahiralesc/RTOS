@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="https://cdn-icons-png.flaticon.com/512/3273/3273536.png" alt="logo" width="250" height="250"/>
-  <h1 align="center">F413ZHT6_{Nombre de Proyecto}</h1>
+  <img src=/img/Mouse.png" alt="logo" width="250" height="250"/>
+  <h1 align="center">F413ZHT6_Micromouse</h1>
 </p>
 
 ## Description
