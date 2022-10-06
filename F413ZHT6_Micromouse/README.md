@@ -1,7 +1,6 @@
-
+  ![Alt text](img/mouse.png "Mouse")
 <p align="center">
   <h1 align="center">F413ZHT6_Micromouse</h1>
-  ![Alt text](img/mouse.png "Mouse")
 </p>
 
 ## Description
