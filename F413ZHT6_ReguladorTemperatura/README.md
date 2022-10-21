@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../img/TechnoTemperatureLogo.jpeg" alt="Logo" width="250" height="250"/>
+  <img src="img/TechnoTemperatureLogo.jpeg" alt="Logo" width="250" height="250"/>
   <h1 align="center">F413ZHT6_ReguladorTemperatura</h1>
 </p>
 
