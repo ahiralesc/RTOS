@@ -1,0 +1,5 @@
+Tarjeta STM32F413ZH6
+Modulo wifi ESP32
+Sensores:
+-SCT013 (Voltaje/Corriente)
+-Termistor de 100k Ohms
