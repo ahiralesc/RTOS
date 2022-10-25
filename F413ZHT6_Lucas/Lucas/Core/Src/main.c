@@ -18,7 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include <stdio.h>
+#include <string.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -42,7 +43,7 @@
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 
-UART_HandleTypeDef huart9;
+UART_HandleTypeDef huart8;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
@@ -55,7 +56,7 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_ADC1_Init(void);
-static void MX_UART9_Init(void);
+static void MX_UART8_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -72,7 +73,7 @@ static void MX_UART9_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  char msg[] =  "in while...";
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -89,7 +90,6 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
 
-
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -97,27 +97,48 @@ int main(void)
   MX_DMA_Init();
   MX_USART3_UART_Init();
   MX_ADC1_Init();
-  MX_UART9_Init();
+  MX_UART8_Init();
   /* USER CODE BEGIN 2 */
-  //HAL_DMA_RegisterCallback(&hdma_usart2_tx, HAL_DMA_XFER_CPLT_CB_ID, &DMATransferComplete);
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, ADC_BUF_LEN);
 
   /* USER CODE END 2 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
+  // HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, ADC_BUF_LEN);
+ uint8_t UART8_rxBuffer = 0x00;
+ uint16_t raw;
+ char analog_buffer[10];
+ HAL_StatusTypeDef status;
+ while (1)
+ {
+  // get mic value
+  HAL_ADC_Start(&hadc1);
+  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+  raw = HAL_ADC_GetValue(&hadc1);
 
-	 //read analogic input
-	huart3.Instance->CR3 |= USART_CR3_DMAT;
-	HAL_DMA_Start_IT(&hdma_usart3_tx, (uint32_t)msg, (uint32_t)&huart3.Instance->TDR, strlen(msg));
+  /* print analog value */
+  sprintf(analog_buffer, "%hu\r\n", raw);
+  status = HAL_UART_Transmit(&huart3, (uint8_t *)analog_buffer, strlen(analog_buffer), 100);
+
+  /* delay if there is any issue */
+  if(status != HAL_OK){
 	HAL_Delay(1000);
-    /* USER CODE BEGIN 3 */
+ }
+
+  /* print if extreme value has been reached */
+  HAL_UART_Receive(&huart8, &UART8_rxBuffer, 8, 100);
+  if(UART8_rxBuffer == 0xFF){
+	  char message_extreme_value[] = "\r\nAlert: extreme value reached !!!";
+	  status = HAL_UART_Transmit(&huart3, (uint8_t *)message_extreme_value, strlen(message_extreme_value), 100);
+	  UART8_rxBuffer = 0x00;
   }
-  /* USER CODE END 3 */
+
+  /* delay if there is any issue */
+  if(status != HAL_OK){
+	HAL_Delay(1000);
+  }
+
+ }
 }
+
 
 /**
   * @brief System Clock Configuration
@@ -213,35 +234,35 @@ static void MX_ADC1_Init(void)
 }
 
 /**
-  * @brief UART9 Initialization Function
+  * @brief UART8 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_UART9_Init(void)
+static void MX_UART8_Init(void)
 {
 
-  /* USER CODE BEGIN UART9_Init 0 */
+  /* USER CODE BEGIN UART8_Init 0 */
 
-  /* USER CODE END UART9_Init 0 */
+  /* USER CODE END UART8_Init 0 */
 
-  /* USER CODE BEGIN UART9_Init 1 */
+  /* USER CODE BEGIN UART8_Init 1 */
 
-  /* USER CODE END UART9_Init 1 */
-  huart9.Instance = UART9;
-  huart9.Init.BaudRate = 115200;
-  huart9.Init.WordLength = UART_WORDLENGTH_8B;
-  huart9.Init.StopBits = UART_STOPBITS_1;
-  huart9.Init.Parity = UART_PARITY_NONE;
-  huart9.Init.Mode = UART_MODE_TX_RX;
-  huart9.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart9.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart9) != HAL_OK)
+  /* USER CODE END UART8_Init 1 */
+  huart8.Instance = UART8;
+  huart8.Init.BaudRate = 115200;
+  huart8.Init.WordLength = UART_WORDLENGTH_8B;
+  huart8.Init.StopBits = UART_STOPBITS_1;
+  huart8.Init.Parity = UART_PARITY_NONE;
+  huart8.Init.Mode = UART_MODE_TX_RX;
+  huart8.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart8.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart8) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN UART9_Init 2 */
+  /* USER CODE BEGIN UART8_Init 2 */
 
-  /* USER CODE END UART9_Init 2 */
+  /* USER CODE END UART8_Init 2 */
 
 }
 
@@ -303,8 +324,8 @@ static void MX_GPIO_Init(void)
 {
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOG_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
 }
