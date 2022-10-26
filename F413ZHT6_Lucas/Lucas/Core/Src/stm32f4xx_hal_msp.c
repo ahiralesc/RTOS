@@ -168,37 +168,29 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
 void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(huart->Instance==UART9)
+  if(huart->Instance==UART8)
   {
-  /* USER CODE BEGIN UART9_MspInit 0 */
+  /* USER CODE BEGIN UART8_MspInit 0 */
 
-  /* USER CODE END UART9_MspInit 0 */
+  /* USER CODE END UART8_MspInit 0 */
     /* Peripheral clock enable */
-    __HAL_RCC_UART9_CLK_ENABLE();
+    __HAL_RCC_UART8_CLK_ENABLE();
 
-    __HAL_RCC_GPIOG_CLK_ENABLE();
-    __HAL_RCC_GPIOD_CLK_ENABLE();
-    /**UART9 GPIO Configuration
-    PG1     ------> UART9_TX
-    PD14     ------> UART9_RX
+    __HAL_RCC_GPIOF_CLK_ENABLE();
+    /**UART8 GPIO Configuration
+    PF8     ------> UART8_RX
+    PF9     ------> UART8_TX
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_1;
+    GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF11_UART9;
-    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+    GPIO_InitStruct.Alternate = GPIO_AF8_UART8;
+    HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = GPIO_PIN_14;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF11_UART9;
-    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  /* USER CODE BEGIN UART8_MspInit 1 */
 
-  /* USER CODE BEGIN UART9_MspInit 1 */
-
-  /* USER CODE END UART9_MspInit 1 */
+  /* USER CODE END UART8_MspInit 1 */
   }
   else if(huart->Instance==USART3)
   {
@@ -235,25 +227,23 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 */
 void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 {
-  if(huart->Instance==UART9)
+  if(huart->Instance==UART8)
   {
-  /* USER CODE BEGIN UART9_MspDeInit 0 */
+  /* USER CODE BEGIN UART8_MspDeInit 0 */
 
-  /* USER CODE END UART9_MspDeInit 0 */
+  /* USER CODE END UART8_MspDeInit 0 */
     /* Peripheral clock disable */
-    __HAL_RCC_UART9_CLK_DISABLE();
+    __HAL_RCC_UART8_CLK_DISABLE();
 
-    /**UART9 GPIO Configuration
-    PG1     ------> UART9_TX
-    PD14     ------> UART9_RX
+    /**UART8 GPIO Configuration
+    PF8     ------> UART8_RX
+    PF9     ------> UART8_TX
     */
-    HAL_GPIO_DeInit(GPIOG, GPIO_PIN_1);
+    HAL_GPIO_DeInit(GPIOF, GPIO_PIN_8|GPIO_PIN_9);
 
-    HAL_GPIO_DeInit(GPIOD, GPIO_PIN_14);
+  /* USER CODE BEGIN UART8_MspDeInit 1 */
 
-  /* USER CODE BEGIN UART9_MspDeInit 1 */
-
-  /* USER CODE END UART9_MspDeInit 1 */
+  /* USER CODE END UART8_MspDeInit 1 */
   }
   else if(huart->Instance==USART3)
   {
