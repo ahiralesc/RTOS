@@ -80,6 +80,7 @@ SemaphoreHandle_t xData_cont;
 int middle = 0;
 uint8_t buffer3[5];
 uint8_t whoops[] = "Whoops\r\n";
+uint8_t buffer_long[5];
 
 /* USER CODE END 0 */
 
@@ -359,28 +360,30 @@ void UploadTaskHook(void const * argument)
 {
 	for(;;)
 	{
-		xSemaphoreTake( xData_Available,  portMAX_DELAY);
-		char msg2[10];
-		sprintf(msg2, "%lu\r\n", uxQueueSpacesAvailable( xQueue1 ));
-		HAL_UART_Transmit(&huart3, (uint8_t*)msg2, strlen(msg2), 100);
-		char msg3[5];
-		sprintf(msg3, "%u\r\n", *myString);
-		HAL_UART_Transmit(&huart3, (uint8_t*)msg3, strlen(msg3), 100);
-		//xQueueSend(xQueue1, msg3, portMAX_DELAY);
-		for(int i = 0; i<sizeof(msg3); i++){
-			if( xQueueSend( xQueue1, &msg3+i, ( TickType_t ) 0 ) != pdPASS )
-			{
-				uint8_t buffer9[] = "Failed to Upload\r\n";
-				HAL_UART_Transmit(&huart3, buffer9, sizeof(buffer9), 100);
+		if(xSemaphoreTake( xData_Available,  portMAX_DELAY)){
+			char msg2[10];
+			sprintf(msg2, "%lu\r\n", uxQueueSpacesAvailable( xQueue1 ));
+			HAL_UART_Transmit(&huart3, (uint8_t*)msg2, strlen(msg2), 100);
+			char msg3[5];
+			sprintf(msg3, "%u\r\n", *myString);
+			HAL_UART_Transmit(&huart3, (uint8_t*)msg3, strlen(msg3), 100);
+			//xQueueSend(xQueue1, msg3, portMAX_DELAY);
+			for(int i = 0; i<sizeof(msg3); i++){
+				if( xQueueSend( xQueue1, &msg3+i, ( TickType_t ) 0 ) != pdPASS )
+				{
+					uint8_t buffer9[] = "Failed to Upload\r\n";
+					HAL_UART_Transmit(&huart3, buffer9, sizeof(buffer9), 100);
+				} else {
+					uint8_t buffer9[] = "Upload :)\r\n";
+					HAL_UART_Transmit(&huart3, buffer9, sizeof(buffer9), 100);
+				}
+			}
+			if (uxQueueSpacesAvailable( xQueue1 ) == 0){
+				sending_function();
 			} else {
-				uint8_t buffer9[] = "Upload :)\r\n";
-				HAL_UART_Transmit(&huart3, buffer9, sizeof(buffer9), 100);
+				xSemaphoreGive( xData_cont);
 			}
 		}
-		if (uxQueueSpacesAvailable( xQueue1 ) == 0){
-			sending_function();
-		}
-		xSemaphoreGive( xData_cont);
 	}
 }
 
@@ -433,50 +436,42 @@ void ReadingTaskHook(void const * argument)
 
 		vTaskDelayUntil( &tickCount, 1000 );
 
+		xSemaphoreGive(xData_cont);
+
 		for(;;)
 		{
-			uint8_t buffer1[] = "Reading\r\n";
-			HAL_UART_Transmit(&huart3, buffer1, sizeof(buffer1), 100);
-			HAL_ADC_Start(&hadc1);
-			HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-			raw = HAL_ADC_GetValue(&hadc1);
+			if(xSemaphoreTake( xData_cont,  portMAX_DELAY)){
+				uint8_t buffer1[] = "Reading\r\n";
+				HAL_UART_Transmit(&huart3, buffer1, sizeof(buffer1), 100);
+				HAL_ADC_Start(&hadc1);
+				HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+				raw = HAL_ADC_GetValue(&hadc1);
+				raw = raw/200;
+				raw = (int)raw;
 
-			if(raw < 60){
-					  if (middle == 0){
-						  raw = 10;
-					  } else {
-						  raw = 40;
-					  }
-				  }
-				  else{
-					  if(raw < 135){
-						  raw = 20;
-						  middle = 0;
-					  }
-					  else {
-						 raw = 30;
-						 middle = 1;
-					  }
-				  }
-			myString=&raw;
-			xSemaphoreGive(xData_Available);
-			xSemaphoreTake(xData_cont,  portMAX_DELAY);
-			vTaskDelayUntil( &tickCount, frequency );
+				if (raw > 9){
+					raw = 9;
+				}
+				myString=&raw;
+				xSemaphoreGive(xData_Available);
+				if(xSemaphoreTake( xData_cont,  portMAX_DELAY)){
+					tickCount = xTaskGetTickCount();
+					vTaskDelayUntil( &tickCount, frequency );
+					xSemaphoreGive(xData_cont);
+				}
+			}
 		}
 }
 
 void sending_function() {
-	char msg[20];
+	char msg[1];
 	TickType_t tickCount;
 	tickCount = xTaskGetTickCount();
-	  /*uint8_t buffer3[5];
-	  uint8_t whoops[] = "Whoops\r\n";*/
 
 	for(int i = 0; i<4; i++){
 		xQueueReceive( xQueue1, &msg, ( TickType_t ) 0 );
 		char buffer6[17];
-		uint8_t buffer_long[20];
-		sprintf(buffer6, "AT+SEND=102,3,%c\r\n", *msg);
+		sprintf(buffer6, "AT+SEND=102,1,%c\r\n", *msg);
 		HAL_UART_Transmit(&huart3, buffer6, sizeof(buffer6), 100);
 
 		HAL_UART_Transmit(&huart5, buffer6, sizeof(buffer6), 100);
@@ -489,17 +484,16 @@ void sending_function() {
 	       HAL_UART_Transmit(&huart3, buffer_long, sizeof(buffer_long), 100);
 	    }
 
-	    vTaskDelayUntil( &tickCount, 1000 );
+	    tickCount = xTaskGetTickCount();
+	    vTaskDelayUntil( &tickCount, 4000 );
 
 		xQueueReceive( xQueue1, &msg, ( TickType_t ) 0 );
 		xQueueReceive( xQueue1, &msg, ( TickType_t ) 0 );
 		xQueueReceive( xQueue1, &msg, ( TickType_t ) 0 );
 		xQueueReceive( xQueue1, &msg, ( TickType_t ) 0 );
+
 	}
-
-	//xQueueReceive( xQueue1, &( msg ), ( TickType_t ) 0 );
-	//HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), 100);
-	//xQueueReset( xQueue1 );
+	xSemaphoreGive(xData_cont);
 }
 
 /**

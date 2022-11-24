@@ -254,6 +254,8 @@
   ******************************************************************************
   */
 
+int just_called = 0;
+
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 
@@ -1835,6 +1837,10 @@ HAL_StatusTypeDef HAL_UARTEx_ReceiveToIdle_DMA(UART_HandleTypeDef *huart, uint8_
       {
         __HAL_UART_CLEAR_IDLEFLAG(huart);
         ATOMIC_SET_BIT(huart->Instance->CR1, USART_CR1_IDLEIE);
+        //Added
+		if (just_called == 1){
+			HAL_UARTEx_RxEventCallback(huart, Size);
+		}
       }
       else
       {
@@ -1843,6 +1849,7 @@ HAL_StatusTypeDef HAL_UARTEx_ReceiveToIdle_DMA(UART_HandleTypeDef *huart, uint8_
            (Overrun error for instance).
            In such case Reception Type has been reset to HAL_UART_RECEPTION_STANDARD. */
         status = HAL_ERROR;
+        just_called = 1;
       }
     }
 
