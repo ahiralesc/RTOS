@@ -60,8 +60,8 @@ all: main-build
 main-build: Receiver.elf secondary-outputs
 
 # Tool invocations
-Receiver.elf Receiver.map: $(OBJS) $(USER_OBJS) D:\Documents\Escuela\5to.\ Semestre\Sistemas\ Operativos\Receiver\STM32F413ZHTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Receiver.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"D:\Documents\Escuela\5to. Semestre\Sistemas Operativos\Receiver\STM32F413ZHTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Receiver.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Receiver.elf Receiver.map: $(OBJS) $(USER_OBJS) D:\Documents\Escuela\5to.\ Semestre\Sistemas\ Operativos\RTOS\F413ZHT6_MonitoreoDeCorrientes\F413ZHT6_MonitoreoDeCorrientes_Receiver\STM32F413ZHTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Receiver.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"D:\Documents\Escuela\5to. Semestre\Sistemas Operativos\RTOS\F413ZHT6_MonitoreoDeCorrientes\F413ZHT6_MonitoreoDeCorrientes_Receiver\STM32F413ZHTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Receiver.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
