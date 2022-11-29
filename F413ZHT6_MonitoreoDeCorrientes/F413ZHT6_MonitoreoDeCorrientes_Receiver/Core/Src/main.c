@@ -60,7 +60,7 @@ static void MX_UART5_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-#define RxBuf_SIZE 64
+#define RxBuf_SIZE 84
 
 uint8_t RxBuf[RxBuf_SIZE];
 
@@ -71,7 +71,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 
 	/* PRINTING */
 
-	 HAL_UART_Transmit(&huart3, RxBuf, 22, 100);
+	 HAL_UART_Transmit(&huart3, RxBuf, RxBuf_SIZE, 100);
 
 
 	/* start the DMA again */
