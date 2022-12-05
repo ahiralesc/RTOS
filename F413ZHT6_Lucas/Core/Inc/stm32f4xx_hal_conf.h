@@ -37,13 +37,13 @@
   */
 #define HAL_MODULE_ENABLED
 
-  #define HAL_ADC_MODULE_ENABLED
+  /* #define HAL_ADC_MODULE_ENABLED   */
 /* #define HAL_CRYP_MODULE_ENABLED   */
 /* #define HAL_CAN_MODULE_ENABLED   */
 /* #define HAL_CRC_MODULE_ENABLED   */
 /* #define HAL_CAN_LEGACY_MODULE_ENABLED   */
 /* #define HAL_CRYP_MODULE_ENABLED   */
-/* #define HAL_DAC_MODULE_ENABLED   */
+#define HAL_DAC_MODULE_ENABLED
 /* #define HAL_DCMI_MODULE_ENABLED   */
 /* #define HAL_DMA2D_MODULE_ENABLED   */
 /* #define HAL_ETH_MODULE_ENABLED   */
@@ -64,7 +64,7 @@
 /* #define HAL_MMC_MODULE_ENABLED   */
 /* #define HAL_SPI_MODULE_ENABLED   */
 #define HAL_TIM_MODULE_ENABLED
-#define HAL_UART_MODULE_ENABLED
+/* #define HAL_UART_MODULE_ENABLED   */
 /* #define HAL_USART_MODULE_ENABLED   */
 /* #define HAL_IRDA_MODULE_ENABLED   */
 /* #define HAL_SMARTCARD_MODULE_ENABLED   */
@@ -96,7 +96,7 @@
   *        (when HSE is used as system clock source, directly or through the PLL).
   */
 #if !defined  (HSE_VALUE)
-  #define HSE_VALUE    25000000U /*!< Value of the External oscillator in Hz */
+  #define HSE_VALUE    8000000U /*!< Value of the External oscillator in Hz */
 #endif /* HSE_VALUE */
 
 #if !defined  (HSE_STARTUP_TIMEOUT)
@@ -148,7 +148,7 @@
   * @brief This is the HAL system configuration section
   */
 #define  VDD_VALUE		      3300U /*!< Value of VDD in mv */
-#define  TICK_INT_PRIORITY            15U   /*!< tick interrupt priority */
+#define  TICK_INT_PRIORITY            0U   /*!< tick interrupt priority */
 #define  USE_RTOS                     0U
 #define  PREFETCH_ENABLE              1U
 #define  INSTRUCTION_CACHE_ENABLE     1U
