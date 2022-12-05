@@ -1,10 +1,3 @@
-/*
- * notes.h
- *
- *  Created on: Oct 6, 2020
- *      Author: renanmoreira
- */
-
 #ifndef INC_NOTES_H_
 #define INC_NOTES_H_
 

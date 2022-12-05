@@ -1,12 +1,3 @@
-/*
- * polyphonic-tunes.h
- *	Universidade Federal de Minas Gerais
- *  Created on: Oct 5, 2020
- *      Author: Renan Moreira, Rodolfo Lessa
- *     Version: 1.0
- *     License: GPLv3.0
- */
-
 #ifndef INC_POLYPHONIC_TUNES_H_
 #define INC_POLYPHONIC_TUNES_H_
 

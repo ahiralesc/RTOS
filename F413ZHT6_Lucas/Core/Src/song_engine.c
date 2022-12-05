@@ -1,12 +1,3 @@
-/*
- * song_engine.c
- *	Universidade Federal de Minas Gerais
- *  Created on: Oct 7, 2020
- *      Author: Renan Moreira, Rodolfo Lessa
- *     Version: 1.0
- *     License: GPLv3.0
- */
-
 #include "song_engine.h"
 
 #include "polyphonic_tunes.h"
@@ -17,7 +8,6 @@ TIM_HandleTypeDef* tim_control;
 
 volatile music current_song;
 volatile song_status current_status;
-
 
 
 uint8_t update_note (volatile music* musica, uint8_t instrument){
@@ -126,7 +116,8 @@ uint8_t update_note (volatile music* musica, uint8_t instrument){
 }
 
 
-volatile uint32_t ticks_aux;
+volatile uint32_t ticks_aux_channel_3;
+volatile uint32_t ticks_aux_channel_4;
 
 void voice_update(uint8_t voice) {
 	uint8_t st;
@@ -136,6 +127,7 @@ void voice_update(uint8_t voice) {
 			volatile int a;
 			a = 2;
 		}
+		uint32_t ticks_aux;
 		ticks_aux = 60.0/current_song.bpm*current_song.control.duration[voice] * FS;
 		current_song.control.remaining_ticks[voice] = ticks_aux * NR_PERC/100;
 		current_song.control.pause_ticks[voice] = ticks_aux * (100-NR_PERC)/100;
@@ -192,7 +184,6 @@ void load_song(music musica) {
 	for (uint8_t i = 0; i < 4; i++) {
 		voice_update(i);
 	}
-
 }
 
 void clear_song() {
@@ -208,11 +199,8 @@ void set_custom_output_handler(void (*output_handler)(uint32_t)) {
 }
 
 void play_song() {
-
-
 	synth_resume();
 	current_status = PLAYING;
-
 }
 
 void pause_song() {
@@ -228,7 +216,6 @@ void stop_song() {
 	memset((uint16_t*)&current_song.control.posicao, 0, sizeof(current_song.control.posicao)*4);
 
 	for (uint8_t i = 0; i < 4; i++) {
-	//		update_note(&musica, i);
 		voice_update(i);
 	}
 

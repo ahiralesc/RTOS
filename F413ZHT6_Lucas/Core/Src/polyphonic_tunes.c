@@ -1,14 +1,3 @@
-/*
- * polyphonic-tunes.c
- *	Universidade Federal de Minas Gerais
- *  Created on: Oct 5, 2020
- *      Author: Renan Moreira, Rodolfo Lessa
- *     Version: 1.0
- *     License: GPLv3.0
- *
- */
-
-
 #include "polyphonic_tunes.h"
 #include "polyphonic_tunes_tables.h"
 
@@ -37,8 +26,12 @@ TIM_HandleTypeDef* tim_control;
 
 TIM_HandleTypeDef* tim_audio_out = NULL;
 uint8_t output_channel;
+uint8_t* output_channels;
 
 double timer_bus_freq;
+
+volatile uint8_t map_voice_channel[4];
+int active_map_voice_channel = 0;
 
 //*********************************************************************************************
 //  Audio driver interrupt
@@ -99,10 +92,10 @@ void timer_output_handler(uint32_t output) {
 			tim_audio_out->Instance->CCR2 = output;
 			break;
 		case TIM_CHANNEL_3:
-			tim_audio_out->Instance->CCR3 = output;
+			tim_audio_out->Instance->CCoutputR3 = output;
 			break;
 		case TIM_CHANNEL_4:
-			tim_audio_out->Instance->CCR4 = output;
+			tim_audio_out->Instance->CoutputCR4 = output;
 			break;
 		default:
 			break;
@@ -126,6 +119,13 @@ void setup_synth_pwm_output_handler(TIM_HandleTypeDef* output_tim, uint8_t out_c
 	output_func = timer_output_handler;
 }
 
+void set_map_channel_voices(uint8_t* custom_map_voice_channel){
+	map_voice_channel[0] = *custom_map_voice_channel;
+	map_voice_channel[1] = *(custom_map_voice_channel+1);
+	map_voice_channel[2] = *(custom_map_voice_channel+2);
+	map_voice_channel[3] = *(custom_map_voice_channel+3);
+	active_map_voice_channel = 1;
+}
 
 //*********************************************************************
 //  Timing/sequencing functions
@@ -235,7 +235,6 @@ void setLength(uint8_t voice, uint8_t length)
 
 void setMod(uint8_t voice, uint16_t mod)
 {
-//    MOD[voice]=(unsigned int)mod*8;//0-1023 512=no mod
 	MOD[voice]=mod-64;//0-1023 512=no mod
 }
 
@@ -276,7 +275,6 @@ void trigger(uint8_t voice)
 {
 	EPCW[voice]=0;
 	FTW[voice]=PITCH[voice];
-	//    FTW[voice]=PITCH[voice]+(PITCH[voice]*(EPCW[voice]/(32767.5*128.0  ))*((int)MOD[voice]-512));
 }
 
 //*********************************************************************
@@ -286,14 +284,10 @@ void trigger(uint8_t voice)
 void synth_suspend()
 {
 	tim_control->Instance->CR1 &= ~TIM_CR1_CEN;
-//	HAL_TIM_Base_Stop(tim_control);
-//	HAL_TIM_Base_Stop_IT(tim_control);
 }
 void synth_resume()
 {
 	tim_control->Instance->CR1 |= TIM_CR1_CEN;
-//	HAL_TIM_Base_Start(tim_control);
-//	HAL_TIM_Base_Start_IT(tim_control);                           //-Start audio interrupt
 }
 
 

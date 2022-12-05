@@ -65,10 +65,18 @@ static void MX_TIM4_Init(void);
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	song_scheduler(htim);
 }
-void set_dac(uint32_t val){
-	HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_8B_R, (val&0xFF00)>>8);
-	HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_8B_R, (val&0xFF00)>>8);
+
+void custom_output_channel_3_and_4(uint32_t output){
+	htim4.Instance->CCR4 = output;
+	htim4.Instance->CCR3 = output;
 }
+
+uint8_t custom_map_voice_channel[] = {
+	TIM_CHANNEL_3,
+	TIM_CHANNEL_3,
+	TIM_CHANNEL_4,
+	TIM_CHANNEL_4
+};
 
 
 /**
@@ -88,49 +96,44 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM4_Init();
 
-  /* fix for running tim callback */
+  /* fix: running tim callback */
   __HAL_TIM_CLEAR_IT(&htim3, TIM_IT_UPDATE);
   while (HAL_TIM_Base_Start_IT(&htim3) != HAL_OK) {};
 
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
 
-    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
+  initialize_song_engine(80000000, &htim3);
+  set_custom_output_handler(custom_output_channel_3_and_4);
+  set_map_channel_voices(custom_map_voice_channel);
 
-    //HAL_DAC_Start(&hdac, DAC_CHANNEL_2);
+ //configure each independent voice
+ eine_kleine_nachtmusik.voices[0] = violino1;
+ eine_kleine_nachtmusik.voices[1] = violino2;
+ eine_kleine_nachtmusik.voices[2] = viola;
+ eine_kleine_nachtmusik.voices[3] = cello;
 
 
-    //initialize song engine
-     initialize_song_engine(80000000, &htim3); // 96000000
-     //use pwm as output. This time we'll use timer4 on channel 4
-     set_pwm_output(&htim4, TIM_CHANNEL_4);
+ //configure general music settings
+ eine_kleine_nachtmusik.bpm = 120;
+ eine_kleine_nachtmusik.nota_ref = QUARTER_NOTE;
+ eine_kleine_nachtmusik.oitava = 4;
 
+ //load song into memory
+ load_song(eine_kleine_nachtmusik);
+ HAL_TIM_PeriodElapsedCallback(&htim3);
 
-     //configure each independent voice
-     eine_kleine_nachtmusik.voices[0] = violino1;
-     eine_kleine_nachtmusik.voices[1] = violino2;
-     eine_kleine_nachtmusik.voices[2] = viola;
-     eine_kleine_nachtmusik.voices[3] = cello;
+ while (1) {
+	 HAL_GPIO_TogglePin(GPIOD, LED_GREEN_Pin|LED_RED_Pin);
+	 play_song();
 
-     //configure general music settings
-     eine_kleine_nachtmusik.bpm = 120;
-     eine_kleine_nachtmusik.nota_ref = QUARTER_NOTE;
-     eine_kleine_nachtmusik.oitava = 4;
+	 while(get_song_status() != STOPPED) {
+	  HAL_Delay(100);
+	 };
 
-     //load song into memory
-     load_song(eine_kleine_nachtmusik);
-     HAL_TIM_PeriodElapsedCallback(&htim3);
-
-     while (1) {
-    	 HAL_GPIO_TogglePin(GPIOD, LED_GREEN_Pin|LED_RED_Pin);
-    	 play_song();
-
-    	 while(get_song_status() != STOPPED) {
-		  HAL_Delay(100);
-    	 };
-
-    	 stop_song();
-    	 HAL_GPIO_TogglePin(GPIOD, LED_GREEN_Pin|LED_RED_Pin);
-    }
-
+	 stop_song();
+	 HAL_GPIO_TogglePin(GPIOD, LED_GREEN_Pin|LED_RED_Pin);
+ }
 }
 
 /**
@@ -315,15 +318,16 @@ static void MX_TIM4_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  //sConfigOC.Pulse = 0;
+  //sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+
+  sConfigOC.Pulse = 32000;
+  sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
-  sConfigOC.Pulse = 32000;
-  sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
   {
     Error_Handler();
