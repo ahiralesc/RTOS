@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include <string.h>
 #include <stdio.h>
+#include <queue.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,6 +34,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define Task1Signal (1UL << 0UL)
+#define Task2Signal (1UL << 1UL)
+#define Task3Signal (1UL << 2UL)
+#define Task4Signal (1UL << 3UL)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -45,20 +50,11 @@ ADC_HandleTypeDef hadc1;
 
 UART_HandleTypeDef huart3;
 
-/* Definitions for Task1 */
-osThreadId_t Task1Handle;
-const osThreadAttr_t Task1_attributes = {
-  .name = "Task1",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for Task2 */
-osThreadId_t Task2Handle;
-const osThreadAttr_t Task2_attributes = {
-  .name = "Task2",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
-};
+osThreadId Task1Handle;
+osThreadId Task2Handle;
+osThreadId Task3Handle;
+osThreadId Task4Handle;
+osThreadId Task5Handle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -68,8 +64,11 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_USART3_UART_Init(void);
-void StartTask1(void *argument);
-void StartTask2(void *argument);
+void StartTask1(void const * argument);
+void StartTask2(void const * argument);
+void StartTask3(void const * argument);
+void StartTask4(void const * argument);
+void CommsTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -77,11 +76,19 @@ void StartTask2(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+typedef struct SensorMessage {
+	uint16_t MessageID;
+	uint16_t Value;
+} Sensors;
 
-void send_taskOne (void)
+Sensors SM1; //, SM2, SM3, SM4;
+
+
+/*void send_taskOne (void)
 {
-	uint8_t data[] = "Reading Sensor from Task1\r\n";
-	HAL_UART_Transmit(&huart3, data, sizeof(data), 500);
+
+	//uint8_t data[] = "Reading Sensor from Task1\r\n";
+	//HAL_UART_Transmit(&huart3, data, sizeof(data), 500);
 }
 
 void send_taskTwo (void)
@@ -89,6 +96,18 @@ void send_taskTwo (void)
 	uint8_t data[] = "Reading Sensor from Task2\r\n";
 	HAL_UART_Transmit(&huart3, data, sizeof(data), 500);
 }
+
+void send_taskThree (void)
+{
+	uint8_t data[] = "Reading Sensor from Task3\r\n";
+	HAL_UART_Transmit(&huart3, data, sizeof(data), 500);
+}
+
+void send_taskFour (void)
+{
+	uint8_t data[] = "Reading Sensor from Task4\r\n";
+	HAL_UART_Transmit(&huart3, data, sizeof(data), 500);
+}*/
 
 void ADC_Select_CH3(void)
 {
@@ -106,6 +125,30 @@ void ADC_Select_CH10(void)
 {
 	ADC_ChannelConfTypeDef sConfig = {0};
 	sConfig.Channel = ADC_CHANNEL_10;
+	sConfig.Rank = 1;
+	sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+	  {
+	    Error_Handler();
+	  }
+}
+
+void ADC_Select_CH13(void)
+{
+	ADC_ChannelConfTypeDef sConfig = {0};
+	sConfig.Channel = ADC_CHANNEL_13;
+	sConfig.Rank = 1;
+	sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+	  {
+	    Error_Handler();
+	  }
+}
+
+void ADC_Select_CH11(void)
+{
+	ADC_ChannelConfTypeDef sConfig = {0};
+	sConfig.Channel = ADC_CHANNEL_11;
 	sConfig.Rank = 1;
 	sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
 	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -149,9 +192,6 @@ int main(void)
 
   /* USER CODE END 2 */
 
-  /* Init scheduler */
-  osKernelInitialize();
-
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
@@ -169,19 +209,29 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of Task1 */
-  Task1Handle = osThreadNew(StartTask1, NULL, &Task1_attributes);
+  /* definition and creation of Task1 */
+  osThreadDef(Task1, StartTask1, osPriorityNormal, 0, 128);
+  Task1Handle = osThreadCreate(osThread(Task1), NULL);
 
-  /* creation of Task2 */
-  Task2Handle = osThreadNew(StartTask2, NULL, &Task2_attributes);
+  /* definition and creation of Task2 */
+  osThreadDef(Task2, StartTask2, osPriorityLow, 0, 128);
+  Task2Handle = osThreadCreate(osThread(Task2), NULL);
+
+  /* definition and creation of Task3 */
+  osThreadDef(Task3, StartTask3, osPriorityNormal, 0, 128);
+  Task3Handle = osThreadCreate(osThread(Task3), NULL);
+
+  /* definition and creation of Task4 */
+  osThreadDef(Task4, StartTask4, osPriorityLow, 0, 128);
+  Task4Handle = osThreadCreate(osThread(Task4), NULL);
+
+  /* definition and creation of Task5 */
+  osThreadDef(Task5, CommsTask, osPriorityIdle, 0, 128);
+  Task5Handle = osThreadCreate(osThread(Task5), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
-
-  /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
   osKernelStart();
@@ -270,7 +320,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 2;
+  hadc1.Init.NbrOfConversion = 4;
   hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
@@ -292,6 +342,24 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_10;
   sConfig.Rank = 2;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_13;
+  sConfig.Rank = 3;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_11;
+  sConfig.Rank = 4;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -361,32 +429,45 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_StartTask1 */
-void StartTask1(void *argument)
+void StartTask1(void const * argument)
 {
   /* USER CODE BEGIN 5 */
-	uint16_t raw;
-	char msg[10];
-	char hello[] = "Temperature from Sensor 1: \r";
+	/*char msg[10];
+	char hello[] = "Temperature from Sensor 1: \r\n";*/
+	SM1.MessageID = 1;
+
+	ADC_Select_CH3();
+	HAL_ADC_Start(&hadc1);
+	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+
+	uint16_t raw = HAL_ADC_GetValue(&hadc1);
+	SM1.Value = raw/14;
+
+	q.insert(SM1.Value);
 
   /* Infinite loop */
   for(;;)
   {
-	  do{
+	  /*do{
 	  send_taskOne();
+
 	  ADC_Select_CH3();
 	  HAL_ADC_Start(&hadc1);
 	  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-	  raw = HAL_ADC_GetValue(&hadc1);
-	  uint16_t temp = raw/14;
 
+
+	  // Prints Temperature from Sensor 1
 	  printf(hello,"c");
 	  HAL_UART_Transmit(&huart3, (uint8_t*)hello, strlen(hello), HAL_MAX_DELAY);
 
+	  // Prints Actual Temperature
 	  sprintf(msg,"%hu\r\n\n",temp);
-	  HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);*/
 
-	  HAL_ADC_Stop(&hadc1);
-	  osDelay(3000);} while(raw != HAL_OK);
+	  /*HAL_ADC_Stop(&hadc1);
+	  osDelay(3000);} while(raw != HAL_OK);*/
+
+	  osDelay(3000);
 
   }
   /* USER CODE END 5 */
@@ -399,7 +480,7 @@ void StartTask1(void *argument)
 * @retval None
 */
 /* USER CODE END Header_StartTask2 */
-void StartTask2(void *argument)
+void StartTask2(void const * argument)
 {
   /* USER CODE BEGIN StartTask2 */
 	uint16_t raw;
@@ -425,11 +506,96 @@ void StartTask2(void *argument)
 	HAL_ADC_Stop(&hadc1);
 	osDelay(3000);} while(hello != HAL_OK);
 
-	/*HAL_UART_Transmit(&huart3, (uint8_t*)hello, sizeof(hello), HAL_MAX_DELAY);
-    HAL_Delay(1000);*/
-
   }
   /* USER CODE END StartTask2 */
+}
+
+/* USER CODE BEGIN Header_StartTask3 */
+/**
+* @brief Function implementing the Task3 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask3 */
+void StartTask3(void const * argument)
+{
+  /* USER CODE BEGIN StartTask3 */
+	uint16_t raw;
+	char msg[10];
+	char hello[] = "Temperature from sensor 3: \r\n";
+  /* Infinite loop */
+  for(;;)
+  {
+	  do{
+	  	send_taskThree();
+	  	ADC_Select_CH13();
+	  	HAL_ADC_Start(&hadc1);
+	  	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+	  	raw = HAL_ADC_GetValue(&hadc1);
+	  	uint16_t temp = raw/14;
+
+	  	HAL_UART_Transmit(&huart3, (uint8_t*)hello, sizeof(hello), HAL_MAX_DELAY);
+	  	sprintf(msg,"%hu\r\n\n",temp);
+
+	  	HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+	  	HAL_ADC_Stop(&hadc1);
+	  	osDelay(3000);} while(hello != HAL_OK);
+  }
+  /* USER CODE END StartTask3 */
+}
+
+/* USER CODE BEGIN Header_StartTask4 */
+/**
+* @brief Function implementing the Task4 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask4 */
+void StartTask4(void const * argument)
+{
+  /* USER CODE BEGIN StartTask4 */
+	uint16_t raw;
+	char msg[10];
+	char hello[] = "Temperature from sensor 4: \r\n";
+  /* Infinite loop */
+  for(;;)
+  {
+	  do{
+	  	  	send_taskFour();
+	  	  	ADC_Select_CH11();
+	  	  	HAL_ADC_Start(&hadc1);
+	  	  	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+	  	  	raw = HAL_ADC_GetValue(&hadc1);
+	  	  	uint16_t temp = raw/14;
+
+	  	  	HAL_UART_Transmit(&huart3, (uint8_t*)hello, sizeof(hello), HAL_MAX_DELAY);
+	  	  	sprintf(msg,"%hu\r\n\n",temp);
+
+	  	  	HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+	  	  	HAL_ADC_Stop(&hadc1);
+	  	  	osDelay(3000);} while(hello != HAL_OK);
+  }
+  /* USER CODE END StartTask4 */
+}
+
+/* USER CODE BEGIN Header_CommsTask */
+/**
+* @brief Function implementing the Task5 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_CommsTask */
+void CommsTask(void const * argument)
+{
+  /* USER CODE BEGIN CommsTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END CommsTask */
 }
 
 /**
