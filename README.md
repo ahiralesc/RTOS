@@ -1,6 +1,9 @@
 # Real Time Operating Systems (RTOS)
 
-This repository integrates theoretical and technical knowledge on how to build multitasking and real-time applications for STM32 architectures. The examples incrementally explore concurrency problems such as task creation, critical sections, inter-task communication, and many topics of interest. The examples were coded on the [STM32F767ZI](https://www.st.com/content/st_com/en/products/microcontrollers-microprocessors/stm32-32-bit-arm-cortex-mcus/stm32-high-performance-mcus/stm32f7-series/stm32f7x7/stm32f767zi.html) board. However, they should work on other STM32 base architectures. 
+This repository integrates theoretical and technical knowledge on how to build multitasking and real-time applications for STM32 and EPSarchitectures. The examples incrementally explore concurrency problems such as task creation, critical sections, inter-task communication, queueing, and many topics of interest. The examples were coded on the following boards:
+- STM32 [F767ZI](https://www.st.com/en/microcontrollers-microprocessors/stm32f767zi.html)
+- STM32 [F413ZHT6](https://www.st.com/en/microcontrollers-microprocessors/stm32f413zh.html)
+ 
 
 The development chain that I used was [STM32Cube](https://www.st.com/content/st_com/en/products/ecosystems/stm32-open-development-environment/stm32cube.html) and [STM32CubeIDE](https://www.st.com/en/development-tools/stm32cubeide.html). For UART serial communication, I have used both the [Hercules](https://www.hw-group.com/software/hercules-setup-utility) or [MobaXterm](https://mobaxterm.mobatek.net/) terminals. Projects were flash with the [Segger J-link](https://www.segger.com/downloads/jlink/) debugger probe. An alternative probe that is often recommended  is [ST-Link/V2](https://www.st.com/en/development-tools/stsw-link009.html). Projects use the [FreeRTOS](https://www.freertos.org/index.html) operating system.
 
