@@ -118,5 +118,3 @@ Following [Graham et. al. notation](https://en.wikipedia.org/wiki/Notation_for_t
 |F767ZIV1_Disabling_interrupts|Contention problems observed in F767ZIV1_Contention are solved by disabling interrupts|
 |F767ZIV1_Disabling_scheduler|Contention problems observed in F767ZIV1_Contention are solved by disabling the scheduler|
 
-Contributers:
-- Leobardo Argiles
