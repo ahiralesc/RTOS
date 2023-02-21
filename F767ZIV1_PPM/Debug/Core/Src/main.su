@@ -1,7 +1,0 @@
-main.c:70:5:main	72	static
-main.c:146:6:SystemClock_Config	88	static
-main.c:186:13:MX_GPIO_Init	40	static
-main.c:238:6:toggleGreenHook	32	static
-main.c:269:6:toggleRedHook	32	static
-main.c:301:6:HAL_TIM_PeriodElapsedCallback	16	static
-main.c:318:6:Error_Handler	4	static,ignoring_inline_asm
