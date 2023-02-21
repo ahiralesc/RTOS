@@ -1,9 +1,0 @@
-main.c:75:5:main	120	static
-main.c:166:6:SystemClock_Config	88	static
-main.c:205:13:MX_GPIO_Init	40	static
-main.c:247:6:toggle	32	static
-main.c:265:6:StartToggleGreen	16	static
-main.c:281:6:StartToggleRed	16	static
-main.c:297:6:StartToggleBlue	16	static
-main.c:315:6:HAL_TIM_PeriodElapsedCallback	16	static
-main.c:332:6:Error_Handler	4	static
