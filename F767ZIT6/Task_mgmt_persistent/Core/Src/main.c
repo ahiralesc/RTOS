@@ -4,11 +4,12 @@
   * Task Management Persistent task
   *
   ******************************************************************************
-  * The example illustrates how to toggle (ON/OFF) the board green LED via a
-  * persistent task labeled persistentTaskHook. See code
   *
-  * The implementation is not efficient since the tasks uses a spin-lock to
-  * emulate a delay of fixed length.
+  * The example illustrates how to create a single persistent task. Periodic work
+  * is done by interchangeably toggling (ON/OFF) a led and executing a fix length
+  * delay. This gives the illusion that the task is periodic, but it is persistent
+  * as it never yields control of the processor unless an interrupt occurs. See
+  * persistentTaskHook for further details.
   *
   ******************************************************************************
   */
@@ -212,16 +213,24 @@ static void MX_GPIO_Init(void)
 void persistentTaskHook(void const * argument)
 {
   /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-	  HAL_GPIO_WritePin(IGreen_GPIO_Port, IGreen_Pin, GPIO_PIN_SET);
-	  /* Delay the task exection for 2000 seconds */
-	  vTaskDelay(pdMS_TO_TICKS(2000));
-	  HAL_GPIO_WritePin(IGreen_GPIO_Port, IGreen_Pin, GPIO_PIN_RESET);
-	  /* Alternatives to vTaskDelay include: HAL_Delay and osDelay */
-	  HAL_Delay(2000);
-  }
+
+	/**
+	 *  Alternatives to vTaskDelay include: HAL_Delay and osDelay.
+	 **/
+	for(;;)
+	{
+		/* 1. The green LED is toggled ON (GPIO_PIN_SET) */
+		HAL_GPIO_WritePin(IGreen_GPIO_Port, IGreen_Pin, GPIO_PIN_SET);
+
+		/* 2. A delay of 2 seconds is executed */
+		vTaskDelay(pdMS_TO_TICKS(2000));
+
+		/* 3. The green LED is toggled OFF */
+		HAL_GPIO_WritePin(IGreen_GPIO_Port, IGreen_Pin, GPIO_PIN_RESET);
+
+		/* 4. A delay if 2 seconds in performed */
+		HAL_Delay(2000);
+	}
   /* USER CODE END 5 */
 }
 
