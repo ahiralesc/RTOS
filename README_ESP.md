@@ -4,4 +4,6 @@ Este repositorio integra conocimientos teóricos y técnicos para la construcci�
 
 Dado que el contexto de ejecución es con interrupciones, problemas de concurrencia, acceso a recursos compartidos, manejo de interrupciones, sincronización de ejecución y comunicación deben tratarse. Los ejemplos del repositorio tratan muchos de estos casos. Las aplicaciones que requieren soporte multitareas incluyen el sistema operativo [FreeRTOS](https://www.freertos.org/), otras soluciones lo excluyen y solo procesan interrupciones. Note, los ejemplos son con fines educativos. Muchos de los ejemplos han sido adaptados del libro *real-time operating system* de Jim Cooling y *FreeRTOS* de Richard Barry. La carpeta proyectos incluye pruebas de concepto que muchos colaboradores han sometido ha este sition. Muchas gracias por su tiempo y trabajo. 
 
-Vea [documentación en ingles](Readme.md)
+Cada Proyecto viene acompañado ya sea con un archivo README.md o README.ipyn. Tal, incluye aspectos de diseño y de desempeño de la aplicación, entre otros aspectos funcionales y no funcionales de la solución. Vea [Readme.md](Readme.md) para documentación en ingles.
+
+Autor: Adan Hirales-Carbajal

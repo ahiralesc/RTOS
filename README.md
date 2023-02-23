@@ -4,4 +4,6 @@ This repository integrates theoretical and technical knowledge for building mult
 
 Since the execution context is preemptive, concurrency, access to shared resources, interrupt handling, task synchronization, task communication, and other issues must be addressed. The examples in the repository cover many of these cases. Applications that require multitasking include [FreeRTOS](https://www.freertos.org/), other solutions exclude the operating and only process interrupts. Note, most of the examples in each architecture folder are for educational purposes. Many examples have been adapted from Jim Cooling material on real-time operating systems and Richard Barry's book on FreeRTOS. We also include a projects folder with proof of concept of projects that many site collaborators have submitted, many thanks to all of them for the time and work.
 
-See [Spanish documentation](README_ESP.md)
+Each project is accompanied with the Readme.md or Readme.ipyn file. Such gives further insight on design aspects of the application, its performance, among other functional or non-functional aspects of the application. See [Spanish documentation](README_ESP.md).
+
+Author: Adan Hirales-Carbajal.
