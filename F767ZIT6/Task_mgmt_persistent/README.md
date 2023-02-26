@@ -1,10 +1,11 @@
 ### Task management: Persistent task
 
-The example illustrates how to create a single persistent task. Periodic work is done by interchangeably toggling (ON/OFF) a led and executing a delay for a given time length. The delay gives the impression that the task is periodic. Note:
-- ```vTaskDelay```, places the task in **block state** for a given time length clock ticks).
-- ```HAL_Delay```, emulates the delay via a **[busy wait](https://en.wikipedia.org/wiki/Busy_waiting)**.
+The example illustrates how to create a single persistent task. Periodic work is done by toggling (ON/OFF) a led and executing a finite length delay twice. A delay gives the impression that the task is periodic. There exist, at least, two strategies to create a delay:
 
-Thus, if in the following code you were to use HAL_Delay in lines 2 and 3. The resulting task is persistent as it would not yield control of the processor unless a higher priority task or interrupt preempts control. Which in this example, only the later case may occur. On the other hand, if you were to use vTaskDelay in line 2 and 3. Then, the task becomes periodic as the task yields control each time it calls vTaskDelay. However, there are no warranties that the delay length is constant. See vTaskDelay documentation for further details. 
+- **[Busy waiting](https://en.wikipedia.org/wiki/Busy_waiting)**, iterates a loop a finite amount of times. However, during such time it doesn't do usefull work, waisting valuable processor time. ```HAL_Delay``` falls under this category.
+- **Yield** registers the time instance in wich the task **shuold** wake y yields control of the processor. In a machine model with preemptions and higher priority tasks ```vTaskDelay``` does not guarantee that the task will be woken up at the requested time instance. 
+
+Thus, if in the following code you were to use HAL_Delay in lines 2 and 3. The resulting task is persistent as it would not yield control of the processor unless a higher priority task or interrupt preempts control. On the other hand, if you were to use vTaskDelay in line 2 and 3. Then the task becomes periodic as the task yields control each time it calls vTaskDelay. vTaskDelay.
 
 
 ```C

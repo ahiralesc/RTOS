@@ -1,11 +1,11 @@
 ### Gestión de tareas: tarea persistente
 
-El ejemplo ilustra cómo crear una sola tarea persistente. La tare realiza trabajo alternando un LED (ENCENDIDO/APAGADO) y ejecutando un retraso durante un período de tiempo determinado. El retraso da la impresión de que la tarea es periódica. Note:
+El siguiente ejemplo ilustra cómo crear una sola tarea persistente. Tal alterna un LED (ENCENDIDO/APAGADO) y aplica dos retrasos de longitud finita. Un retraso, también referenciado como demora, crea la ilusión de que la tarea es periódica. Existen al menos dos estrategias para crear una demora:
 
-- ```vTaskDelay```, coloca la tarea en **estado de bloqueo** durante un período de tiempo determinado.
-- ```HAL_Delay```, emula el retraso a través de una [espera ocupada](https://en.wikipedia.org/wiki/Busy_waiting).
+- **[Espera ocupada](https://en.wikipedia.org/wiki/Busy_waiting)**,  itera un lazo un número finito de veces. Sin embargo, no realiza trabajo util y desperdicia tiempo valioso de procesamiento. ```HAL_Delay``` cae dentro de esta categoria.
+- **Cede voluntario**, registra en el núcleo del sistema operativo la instancia de tiempo en que la tarea **desea** ser reactivada y cede control colocando la tarea en estado bloqueado. En una máquina con interrupciones y tareas con mayor prioridad ```vTaskDelay``` no ofrece garantías de que la tarea sea reactivada en el tiempo deseado. Consulte la documentación de vTaskDelay para obtener más detalles.
 
-Por lo tanto, si en el siguiente código usara HAL_Delay en las líneas 2 y 3, la tarea resultante será persistente, ya que no cede el control del procesador a menos que una tarea de mayor prioridad o una interrupción tome el control. En este ejemplo, solo puede ocurrir el segundo caso. Por otro lado, si usara vTaskDelay en las líneas 2 y 3. Entonces, la tarea se vuelve periódica ya que la tarea cede el control cada vez que llama a vTaskDelay. Sin embargo, no hay garantías de que la duración del retraso sea constante. Consulte la documentación de vTaskDelay para obtener más detalles.
+Por lo tanto, si en el siguiente código se usara HAL_Delay en las líneas 2 y 3, la tarea resultante será persistente, ya que no cedera el control del procesador a menos de que exista alguna tarea o interrupción de mayor prioridad. Por otro lado, si usara vTaskDelay en las líneas 2 y 3. Entonces, la tarea se vuelve periódica ya que la tarea cede el control cada vez que llama a vTaskDelay.
  
 
 ```C
