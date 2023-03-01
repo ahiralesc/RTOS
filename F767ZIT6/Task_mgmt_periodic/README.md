@@ -35,4 +35,4 @@ void periodicTaskHook(void const * argument)
 }
 ```
 
-See [Task mgmt persistent](Task_mgmt_persistent.pdf) for proyect setup. See [README_ESP](README_ESP.md) for spanish translation.  
+See [Task mgmt periodic](Task_mgmt_periodic.pdf) for proyect setup. See [README_ESP](README_ESP.md) for spanish translation.  

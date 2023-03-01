@@ -35,4 +35,4 @@ void periodicTaskHook(void const * argument)
 }
 ```
 
-Vea [Task mgmt persistent](Task_mgmt_periodic.pdf) para parámetros de configuración del proyecto. Vea [README_ESP](README.md) documentación en ingles.  
+Vea [Task mgmt periodic](Task_mgmt_periodic.pdf) para parámetros de configuración del proyecto. Vea [README_ESP](README.md) documentación en ingles.  
