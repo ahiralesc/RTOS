@@ -1,18 +1,21 @@
 /* USER CODE BEGIN Header */
 /**
-  *
-  * Task Management Persistent task
-  *
   ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
   *
-  * The example illustrates how to create a single persistent task. Periodic work
-  * is done by interchangeably toggling (ON/OFF) a led and executing a fix length
-  * delay. This gives the illusion that the task is periodic, but it is persistent
-  * as it never yields control of the processor unless an interrupt occurs. See
-  * persistentTaskHook for further details.
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
+
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"

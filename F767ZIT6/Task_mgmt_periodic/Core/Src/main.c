@@ -214,24 +214,30 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_periodicTaskHook */
 void periodicTaskHook(void const * argument)
 {
+	/* 1. The cycle time period (or tick count) the task will remain in block state */
 	TickType_t tickCount;
-	/* The cycle time period. The task will be unblocked at time (in ticks)*/
 
-	TickType_t frequency = 2000;
+	/* 2. The time the task will remain in block state is 2 seconds */
+	TickType_t frequency = pdMS_TO_TICKS(2000);
 
-	/* Get the current tck count */
+	/* 3. Gets the system tick count */
 	tickCount = xTaskGetTickCount();
 
 	for(;;)
 	{
+			/* 4. Emulate some work by toggling ON the board blue LED */
 			HAL_GPIO_WritePin(IBlue_GPIO_Port, IBlue_Pin, GPIO_PIN_SET);
 
-			/* Delay the task execution for a given interval of time. This will make the task
-				transition to block state. After the elapse time the task will transition to ready state */
+			/*
+			 * 5. Delay the task execution for frequency (2s) length. This will transition the task
+			 * from running to block state.
+			 */
 			vTaskDelayUntil( &tickCount, frequency );
 
+			/* 6. Emulate some work by toggling OFF the board blue LED */
 			HAL_GPIO_WritePin(IBlue_GPIO_Port, IBlue_Pin, GPIO_PIN_RESET);
 
+			/* 7. Delay the task execution for 2s */
 			vTaskDelayUntil( &tickCount, frequency );
 		}
 }
