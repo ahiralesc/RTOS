@@ -6,4 +6,4 @@ Since the execution context is preemptive, concurrency, access to shared resourc
 
 Each project is accompanied with the Readme.md or Readme.ipyn file. Such gives further insight on design aspects of the application, its performance, among other functional or non-functional aspects of the application. See [Spanish documentation](README_ESP.md).
 
-Author: Adan Hirales-Carbajal.
+Author: Adan Hirales-Carbajal <a href='https://www.free-counters.org/'>.</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=f094746bed3044f3118c46dc3a41ff05c2c0e173'></script> <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1006721/t/2"></script>
