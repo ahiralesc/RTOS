@@ -1,38 +1,50 @@
-### Gestión de tareas: tarea persistente
+### Gestión de tareas: tarea periodica + regulación de la frecuencia de trabajo
 
-El siguiente ejemplo ilustra cómo crear una tarea periodica. Tal alterna un LED (ENCENDIDO/APAGADO) y aplica dos retrasos de longitud finita. Un retraso, también referenciado como demora, crea la ilusión de que la tarea es periódica. ```vTaskDelayUntil``` registra en el núcleo del sistema operativo el ciclo en que la tarea **debe** iniciar ejecución.
+El ejemplo ilustra como crear una tarea periodica. Tal realiza prende/apaga un LED a una frecuencia de 20Hz y cede control por 2 segundos. 
+
  
 
 ```C
-void periodicTaskHook(void const * argument)
+void toggleBlueHook(void *argument)
 {
-	/* 1. Número de ciclos que la tarea permanecerá en estado bloqueado  */
-	TickType_t tickCount;
+	/* 1.
+	 * 		TimeStamp and DelayTimeMsec, keep track of the time instance at which
+	 * 		the task must unblock and proceed execution.
+	 * 		last and interval, keep track of the task remaining execution length.
+	 *
+	 * */
 
-	/* 2. Longitud del periodo que la tarea permanece bloqueada (2s) */
-	TickType_t frequency = pdMS_TO_TICKS(2000);
+	TickType_t TimeStamp, last;
+	TickType_t DelayTimeMsec = pdMS_TO_TICKS(2000);
+	TickType_t interval = 0;
 
-	/* 3. Obtiene el número de ciclos actual */
-	tickCount = xTaskGetTickCount();
+	/* 2. gets the current tick count */
+	TimeStamp = xTaskGetTickCount();
 
-	for(;;)
-	{
-			/* 4. Emula trabajo prendiendo el LED interno azul */
-			HAL_GPIO_WritePin(IBlue_GPIO_Port, IBlue_Pin, GPIO_PIN_SET);
+	for(;;){
 
-			/*
-			 * 5. Demora la ejecución de la tarea por el periodo solicitado. Esto hará que la tarea
-			 * transicione a estado bloqueado. 
-			 */
-			vTaskDelayUntil( &tickCount, frequency );
+		HAL_GPIO_WritePin(IRed_GPIO_Port, IRed_Pin, GPIO_PIN_SET);
 
-			/* 6. Emula trabajo apagando el LED interno azul */
-			HAL_GPIO_WritePin(IBlue_GPIO_Port, IBlue_Pin, GPIO_PIN_RESET);
+		/* 3. gets the current tick count */
+		last = xTaskGetTickCount();
+		do {
+			HAL_GPIO_TogglePin(IBlue_GPIO_Port, IBlue_Pin);
 
-			/* 7. Demora nuevamente la ejecución de la tarea por 2s */
-			vTaskDelayUntil( &tickCount, frequency );
-		}
+			/* 4. emulates a frequency of 20 Hz */
+			osDelay(50);
+
+			/* 5. estimates the remaining task length relative to a given time length (1000)*/
+			interval = xTaskGetTickCount() - last;
+		}while(interval < 1000);
+
+		HAL_GPIO_WritePin(IRed_GPIO_Port, IRed_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(IBlue_GPIO_Port, IBlue_Pin, GPIO_PIN_RESET);
+
+		/* 6. yield control for 2 seconds */
+		TimeStamp += DelayTimeMsec;
+		osDelayUntil(TimeStamp);
+	}
 }
 ```
 
-Vea [Task mgmt periodic](Task_mgmt_periodic.pdf) para parámetros de configuración del proyecto. Vea [README_ESP](README.md) documentación en ingles.  
+Vea  administración de tareas periodica [regulación de la frecuencia de trabajo](Task_mgmt_frequency_regulation.pdf) para parámetros de configuración del proyecto. Vea [README_ESP](README.md) documentación en ingles.  

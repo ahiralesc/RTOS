@@ -1,38 +1,49 @@
-### Task management: Periodic task
+### Task management: Periodic task + work frequency regulation
 
-The example illustrates how to create a single periodic task. Periodic work is done by toggling (ON/OFF) a led and executing a finite length delay twice. A delay gives the impression that the task is periodic. ```vTaskDelayUntil``` registers the cycle instance at wich the task must start execution.
+The example illustrates how to create a single periodic task. The task toggles a LED at a rate of 20Hz and yiels control for 2 senconds. 
 
 
 ```C
-void periodicTaskHook(void const * argument)
+void toggleBlueHook(void *argument)
 {
-	/* 1. The cycle time period (or tick count) the task will remain in block state */
-	TickType_t tickCount;
+	/* 1.
+	 * 		TimeStamp and DelayTimeMsec, keep track of the time instance at which
+	 * 		the task must unblock and proceed execution.
+	 * 		last and interval, keep track of the task remaining execution length.
+	 *
+	 * */
 
-	/* 2. The time the task will remain in block state is 2 seconds */
-	TickType_t frequency = pdMS_TO_TICKS(2000);
+	TickType_t TimeStamp, last;
+	TickType_t DelayTimeMsec = pdMS_TO_TICKS(2000);
+	TickType_t interval = 0;
 
-	/* 3. Gets the system tick count */
-	tickCount = xTaskGetTickCount();
+	/* 2. gets the current tick count */
+	TimeStamp = xTaskGetTickCount();
 
-	for(;;)
-	{
-			/* 4. Emulate some work by toggling ON the board blue LED */
-			HAL_GPIO_WritePin(IBlue_GPIO_Port, IBlue_Pin, GPIO_PIN_SET);
+	for(;;){
 
-			/*
-			 * 5. Delay the task execution for frequency (2s) length. This will transition the task
-			 * from running to block state.
-			 */
-			vTaskDelayUntil( &tickCount, frequency );
+		HAL_GPIO_WritePin(IRed_GPIO_Port, IRed_Pin, GPIO_PIN_SET);
 
-			/* 6. Emulate some work by toggling OFF the board blue LED */
-			HAL_GPIO_WritePin(IBlue_GPIO_Port, IBlue_Pin, GPIO_PIN_RESET);
+		/* 3. gets the current tick count */
+		last = xTaskGetTickCount();
+		do {
+			HAL_GPIO_TogglePin(IBlue_GPIO_Port, IBlue_Pin);
 
-			/* 7. Delay the task execution for 2s */
-			vTaskDelayUntil( &tickCount, frequency );
-		}
+			/* 4. emulates a frequency of 20 Hz */
+			osDelay(50);
+
+			/* 5. estimates the remaining task length relative to a given time length (1000)*/
+			interval = xTaskGetTickCount() - last;
+		}while(interval < 1000);
+
+		HAL_GPIO_WritePin(IRed_GPIO_Port, IRed_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(IBlue_GPIO_Port, IBlue_Pin, GPIO_PIN_RESET);
+
+		/* 6. yield control for 2 seconds */
+		TimeStamp += DelayTimeMsec;
+		osDelayUntil(TimeStamp);
+	}
 }
 ```
 
-See [Task mgmt periodic](Task_mgmt_periodic.pdf) for proyect setup. See [README_ESP](README_ESP.md) for spanish translation.  
+See task management periodic task [frequency regulation ](Task_mgmt_frequency_regulation.pdf) for proyect setup. See [README_ESP](README_ESP.md) for spanish translation.  
