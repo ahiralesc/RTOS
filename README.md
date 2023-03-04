@@ -1,5 +1,8 @@
 # Real Time Operating Systems (RTOS)
 
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fahcrtos%2Fhit-counter&count_bg=%23041CEF&title_bg=%23000003&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+
+
 This repository integrates theoretical and technical knowledge for building multitasking and real-time embedded systems based on ARM architecture. The [ST]( https://www.st.com/content/st_com/en.html) STM32 models [F767ZI](https://www.st.com/en/microcontrollers-microprocessors/stm32f767zi.html) and [F413ZHT6](https://www.st.com/en/microcontrollers-microprocessors/stm32f413zh.html) are used for such purpose. The [STM32Cube](https://www.st.com/content/st_com/en/products/ecosystems/stm32-open-development-environment/stm32cube.html) and [STM32CubeIDE](https://www.st.com/en/development-tools/stm32cubeide.html) toolchain are used for template code generation. For the deployment and communication between the workstation and the development node (ST) we use Segger [J-link](https://www.segger.com/downloads/jlink/) and [ST-Link/V2](https://www.st.com/en/development-tools/stsw-link009.html) serial communication. [Hercules](https://www.hw-group.com/software/hercules-setup-utility) and/or [MobaXterm](https://mobaxterm.mobatek.net/) are also used to forward text output to the host machine via serial communication (UART/USART). See README_ESP.md for Spanish version.
 
 Since the execution context is preemptive, concurrency, access to shared resources, interrupt handling, task synchronization, task communication, and other issues must be addressed. The examples in the repository cover many of these cases. Applications that require multitasking include [FreeRTOS](https://www.freertos.org/), other solutions exclude the operating and only process interrupts. Note, most of the examples in each architecture folder are for educational purposes. Many examples have been adapted from Jim Cooling material on real-time operating systems and Richard Barry's book on FreeRTOS. We also include a projects folder with proof of concept of projects that many site collaborators have submitted, many thanks to all of them for the time and work.
@@ -7,5 +10,3 @@ Since the execution context is preemptive, concurrency, access to shared resourc
 Each project is accompanied with the Readme.md or Readme.ipyn file. Such gives further insight on design aspects of the application, its performance, among other functional or non-functional aspects of the application. See [Spanish documentation](README_ESP.md).
 
 Author: Adan Hirales-Carbajal. 
-
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fahcrtos%2Fhit-counter&count_bg=%23041CEF&title_bg=%23000003&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
