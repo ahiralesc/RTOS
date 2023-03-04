@@ -135,7 +135,11 @@ int main(void)
   signalBlueSemHandle = osSemaphoreNew(1, 1, &signalBlueSem_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
+
+  /* 1. Block both tasks */
+  osSemaphoreAcquire(signalBlueSemHandle, portMAX_DELAY);
+  osSemaphoreAcquire(signalRedSemHandle, portMAX_DELAY);
+
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -263,9 +267,13 @@ void toggle(GPIO_TypeDef*  GPIOx, uint16_t GPIO_Pin, uint32_t frequency, int dur
 void toggleRedHook(void *argument)
 {
 	for(;;) {
-		osSemaphoreWait(signalRedSemHandle, portMAX_DELAY);
-		toggle(
-				ERed_GPIO_Port, ERed_Pin, (uint32_t) 100, 5000);
+		/* 1r. Either block or acquire the semaphore to enter the critical region */
+		osSemaphoreAcquire(signalRedSemHandle, portMAX_DELAY);
+
+		/* 2r. Use the critical section */
+		toggle(IRed_GPIO_Port, IRed_Pin, (uint32_t) 100, 5000);
+
+		/* 3r. The red task signals the blue task, thus un-blocking it */
 		osSemaphoreRelease(signalBlueSemHandle);
 	}
 }
@@ -280,9 +288,14 @@ void toggleRedHook(void *argument)
 void toggleBlueHook(void *argument)
 {
 	for(;;) {
+		/* 1b. Blue task signals the red task, thus un-bloking it */
 		osSemaphoreRelease(signalRedSemHandle);
-		osSemaphoreWait(signalBlueSemHandle, portMAX_DELAY);
-		toggle(EBlue_GPIO_Port, EBlue_Pin, (uint32_t) 100, 5000);
+
+		/* 2b. Either block or acquire the semaphore to enter the critical region */
+		osSemaphoreAcquire(signalBlueSemHandle, portMAX_DELAY);
+
+		/* 3b. Use the critical region */
+		toggle(IBlue_GPIO_Port, IBlue_Pin, (uint32_t) 100, 5000);
 	}
 }
 
