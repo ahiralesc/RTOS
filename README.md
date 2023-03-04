@@ -8,5 +8,4 @@ Each project is accompanied with the Readme.md or Readme.ipyn file. Such gives f
 
 Author: Adan Hirales-Carbajal. 
 
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fgjbae1212%2Fhit-counter&count_bg=%233F3DC8&title_bg=%2300030B&icon=philipshue.svg&icon_color=%23E7E7E7&title=RTOS&edge_flat=true)](https://hits.seeyoufarm.com)
-
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fahcrtos%2Fhit-counter&count_bg=%23041CEF&title_bg=%23000003&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
