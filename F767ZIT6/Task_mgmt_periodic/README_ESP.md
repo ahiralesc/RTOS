@@ -1,4 +1,4 @@
-### Gestión de tareas: tarea persistente
+### Gestión de tareas: tarea periodica
 
 El siguiente ejemplo ilustra cómo crear una tarea periodica. Tal alterna un LED (ENCENDIDO/APAGADO) y aplica dos retrasos de longitud finita. Un retraso, también referenciado como demora, crea la ilusión de que la tarea es periódica. ```vTaskDelayUntil``` registra en el núcleo del sistema operativo el ciclo en que la tarea **debe** iniciar ejecución.
  
