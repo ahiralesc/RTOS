@@ -18,28 +18,15 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "crccalc.h"
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-static const uint8_t RC02Cmd[8] =
-{
-	0x15, // slave address
-	0x04, // read input register
-	0x13, // register address 5003 (MSB)
-	0x8B, // register address 5003 (LSB)
-	0x00, // number of registers (MSB)
-	0x01, // number of registers (LSB)
-	0x46, // CRC (LSB)
-	0x70  // CRC (MSB)
-};
-
-static uint16_t RC02Cmdlenght = (uint16_t) (sizeof(RC02Cmd)/sizeof(uint8_t));
 
 /* USER CODE END PTD */
 
@@ -49,7 +36,10 @@ static uint16_t RC02Cmdlenght = (uint16_t) (sizeof(RC02Cmd)/sizeof(uint8_t));
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+uint8_t cmd[8];
+uint8_t rcv_buff[8];
+uint8_t snd_buff[20];
+uint16_t rawco;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -57,20 +47,6 @@ static uint16_t RC02Cmdlenght = (uint16_t) (sizeof(RC02Cmd)/sizeof(uint8_t));
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for instEndPoint */
-osThreadId_t instEndPointHandle;
-const osThreadAttr_t instEndPoint_attributes = {
-  .name = "instEndPoint",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -79,11 +55,8 @@ const osThreadAttr_t instEndPoint_attributes = {
 void SystemClock_Config(void);
 static void MPU_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
-void StartDefaultTask(void *argument);
-void instEndPointImpl(void *argument);
-
+static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -124,54 +97,37 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART2_UART_Init();
   MX_USART3_UART_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_UART_Receive_IT(&huart2, rcv_buff, 8);
+  cmd[0] = 0x15;
+  cmd[1] = 0x04;
+  cmd[2] = 0x13;
+  cmd[3] = 0x8B;
+  cmd[4] = 0x00;
+  cmd[5] = 0x01;
+  uint16_t crc = crc16(cmd, 6);
+  cmd[6] = crc&0xFF;
+  cmd[7] = (crc>>8)&0xFF;
   /* USER CODE END 2 */
 
-  /* Init scheduler */
-  osKernelInitialize();
-
-  /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
-
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
-
-  /* USER CODE BEGIN RTOS_TIMERS */
-  /* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
-
-  /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
-
-  /* Create the thread(s) */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-
-  /* creation of instEndPoint */
-  instEndPointHandle = osThreadNew(instEndPointImpl, NULL, &instEndPoint_attributes);
-
-  /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
-
-  /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
-
-  /* Start scheduler */
-  osKernelStart();
-
-  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  HAL_UART_Transmit(&huart2, cmd, 8, 1000);
+	  HAL_Delay(50);
+	  //if(rcv_buff[0] == 0x15 && rcv_buff[1] == 0x04 && rcv_buff[2] == 0x02) {
+		//  if (rcv_buff[3]*256 + rcv_buff[4] != rawco) {
+	  HAL_UART_Receive_IT(&huart2, rcv_buff, 8);
+			  rawco = rcv_buff[3]*256 + rcv_buff[4];
+			  sprintf(snd_buff,"CO2: %d\r\n",rawco);
+			  HAL_UART_Transmit(&huart3, snd_buff, sizeof(snd_buff), 10);
+		  //}
+	  //}
+
+	  HAL_Delay(50);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -236,10 +192,10 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.BaudRate = 19200;
+  huart2.Init.WordLength = UART_WORDLENGTH_9B;
   huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Parity = UART_PARITY_EVEN;
   huart2.Init.Mode = UART_MODE_TX_RX;
   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
@@ -299,58 +255,23 @@ static void MX_GPIO_Init(void)
 {
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
 
 }
 
 /* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
-
-/* USER CODE BEGIN Header_StartDefaultTask */
-/**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
+void HAl_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_instEndPointImpl */
-/**
-* @brief Function implementing the instEndPoint thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_instEndPointImpl */
-void instEndPointImpl(void *argument)
-{
-	uint8_t msg[] = "Hello from the board\r\n";
-	uint8_t buffer[7];
-
-	for(;;)
+	HAL_UART_Receive_IT(&huart2, rcv_buff, 8);
+	if( rcv_buff[0] == 0x15 && rcv_buff[1] == 0x04 && rcv_buff[2] == 0x02)
 	{
-		HAL_UART_Transmit(&huart2, RC02Cmd, RC02Cmdlenght);
-		osDelay(1000);
-		HAL_UART_Receive(huart, pData, Size, Timeout);
-		if( (buffer[0] == 0x15) && (buffer[1]=0x04) && (buffer[2]=0x02))
-		{
-			uint16 val = (uint16_t)(buffer[3]<<8) | (buffer[4]);
-			HAL_StatusTypeDef status = HAL_UART_Transmit(&huart3, msg, sizeof(msg), 100);
-		}
+		uint16_t rawco = rcv_buff[3]*256 + rcv_buff[4];
+		sprintf(snd_buff, "CO2: %d\r\n", rawco);
+		HAL_UART_Transmit(&huart3, snd_buff, sizeof(snd_buff), 1000);
 	}
-
 }
+/* USER CODE END 4 */
 
 /* MPU Configuration */
 
