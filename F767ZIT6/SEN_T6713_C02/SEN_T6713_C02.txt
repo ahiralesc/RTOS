@@ -1,6 +1,6 @@
 Configuration	SEN_T6713_C02
 STM32CubeMX 	6.6.1
-Date	07/04/2023
+Date	07/05/2023
 MCU	STM32F767ZITx
 
 
