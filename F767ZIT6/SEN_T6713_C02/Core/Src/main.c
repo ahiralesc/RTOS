@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "crccalc.h"
 #include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,10 +37,25 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-uint8_t cmd[8];
+//uint8_t cmd[8];
+
+static const uint8_t cmd[8] = {
+		  0x15,	// slave address
+		  0x04,	// read input register function
+		  0x13,	// register address 5003 (MSB)
+		  0x8B,	// register address 5003 (LSB)
+		  0x00, // number of registers (MSB)
+		  0x01,	// number of registers (LSB)
+		  0x46,	// CRC (LSB)
+		  0x70	// CRC (MSB)
+};
+
+static uint16_t cmd_length =
+  		  (uint16_t)(sizeof(cmd)/sizeof(uint8_t));
+
 uint8_t rcv_buff[8];
-uint8_t snd_buff[20];
-uint16_t rawco;
+uint8_t snd_buff[11];
+uint16_t co2 = -1;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -53,7 +69,6 @@ UART_HandleTypeDef huart3;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MPU_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USART2_UART_Init(void);
@@ -75,9 +90,6 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
-
-  /* MPU Configuration--------------------------------------------------------*/
-  MPU_Config();
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -101,32 +113,13 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   HAL_UART_Receive_IT(&huart2, rcv_buff, 8);
-  cmd[0] = 0x15;
-  cmd[1] = 0x04;
-  cmd[2] = 0x13;
-  cmd[3] = 0x8B;
-  cmd[4] = 0x00;
-  cmd[5] = 0x01;
-  uint16_t crc = crc16(cmd, 6);
-  cmd[6] = crc&0xFF;
-  cmd[7] = (crc>>8)&0xFF;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_UART_Transmit(&huart2, cmd, 8, 1000);
-	  HAL_Delay(50);
-	  //if(rcv_buff[0] == 0x15 && rcv_buff[1] == 0x04 && rcv_buff[2] == 0x02) {
-		//  if (rcv_buff[3]*256 + rcv_buff[4] != rawco) {
-	  HAL_UART_Receive_IT(&huart2, rcv_buff, 8);
-			  rawco = rcv_buff[3]*256 + rcv_buff[4];
-			  sprintf(snd_buff,"CO2: %d\r\n",rawco);
-			  HAL_UART_Transmit(&huart3, snd_buff, sizeof(snd_buff), 10);
-		  //}
-	  //}
-
+	  HAL_UART_Transmit(&huart2, cmd, cmd_length, 1000);
 	  HAL_Delay(50);
     /* USER CODE END WHILE */
 
@@ -205,8 +198,10 @@ static void MX_USART2_UART_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART2_Init 2 */
 
+  /* USER CODE BEGIN USART2_Init 2 */
+  HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(USART2_IRQn);
   /* USER CODE END USART2_Init 2 */
 
 }
@@ -261,46 +256,22 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAl_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	HAL_UART_Receive_IT(&huart2, rcv_buff, 8);
-	if( rcv_buff[0] == 0x15 && rcv_buff[1] == 0x04 && rcv_buff[2] == 0x02)
-	{
-		uint16_t rawco = rcv_buff[3]*256 + rcv_buff[4];
-		sprintf(snd_buff, "CO2: %d\r\n", rawco);
-		HAL_UART_Transmit(&huart3, snd_buff, sizeof(snd_buff), 1000);
+	if (huart->Instance == USART2) {
+		HAL_UART_Receive_IT(&huart2, rcv_buff, 8);
+		if( rcv_buff[0] == 0x15 && rcv_buff[1] == 0x04 && rcv_buff[2] == 0x02) {
+			uint16_t new_co2 = (uint16_t)(rcv_buff[3] << 8 | rcv_buff[4]);
+			if( new_co2 != co2 ) {
+				co2 = new_co2;
+				sprintf(snd_buff, "CO2: %d\r\n", co2);
+				HAL_UART_Transmit(&huart3, snd_buff, strlen(snd_buff), 10);
+			}
+		}
 	}
 }
 /* USER CODE END 4 */
-
-/* MPU Configuration */
-
-void MPU_Config(void)
-{
-  MPU_Region_InitTypeDef MPU_InitStruct = {0};
-
-  /* Disables the MPU */
-  HAL_MPU_Disable();
-
-  /** Initializes and configures the Region and the memory to be protected
-  */
-  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
-  MPU_InitStruct.BaseAddress = 0x0;
-  MPU_InitStruct.Size = MPU_REGION_SIZE_4GB;
-  MPU_InitStruct.SubRegionDisable = 0x87;
-  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
-  MPU_InitStruct.AccessPermission = MPU_REGION_NO_ACCESS;
-  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
-  MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
-  MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
-  MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
-
-  HAL_MPU_ConfigRegion(&MPU_InitStruct);
-  /* Enables the MPU */
-  HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
-
-}
 
 /**
   * @brief  Period elapsed callback in non blocking mode
