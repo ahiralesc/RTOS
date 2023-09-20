@@ -1,0 +1,56 @@
+Configuration	Task_mgmt_task_length
+STM32CubeMX 	6.6.1
+Date	09/20/2023
+MCU	STM32F413ZHTx
+
+
+
+PERIPHERALS	MODES	FUNCTIONS	PINS
+SYS	SysTick	SYS_VS_Systick	VP_SYS_VS_Systick
+USART3	Asynchronous	USART3_RX	PD9
+USART3	Asynchronous	USART3_TX	PD8
+
+
+
+Pin Nb	PINs	FUNCTIONs	LABELs
+37	PA3	GPIO_Output	GPIO_Debug
+77	PD8	USART3_TX	
+78	PD9	USART3_RX	
+PERIPHERALS	MODES	FUNCTIONS	PINS
+SYS	SysTick	SYS_VS_Systick	VP_SYS_VS_Systick
+USART3	Asynchronous	USART3_RX	PD9
+USART3	Asynchronous	USART3_TX	PD8
+
+
+
+Pin Nb	PINs	FUNCTIONs	LABELs
+37	PA3	GPIO_Output	GPIO_Debug
+77	PD8	USART3_TX	
+78	PD9	USART3_RX	
+
+
+
+SOFTWARE PROJECT
+
+Project Settings : 
+Project Name : Task_mgmt_task_length
+Project Folder : E:\Mysrc\EmbeddedSystems\RTOS\F413ZHT6\Task_mgmt_task_length
+Toolchain / IDE : STM32CubeIDE
+Firmware Package Name and Version : STM32Cube FW_F4 V1.27.1
+
+
+Code Generation Settings : 
+STM32Cube MCU packages and embedded software packs : Copy only the necessary library files
+Generate peripheral initialization as a pair of '.c/.h' files per peripheral : No
+Backup previously generated files when re-generating : No
+Delete previously generated files when not re-generated : Yes
+Set all free pins as analog (to optimize the power consumption) : No
+
+
+Toolchains Settings : 
+Compiler Optimizations : 
+
+
+
+
+
