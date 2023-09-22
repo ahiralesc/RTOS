@@ -163,7 +163,7 @@ static void MX_TIM6_Init(void)
   htim6.Instance = TIM6;
   htim6.Init.Prescaler = 1600-1;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 65535;
+  htim6.Init.Period = 10000-1;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
@@ -195,24 +195,24 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIO_Output_GPIO_Port, GPIO_Output_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(IBlue_GPIO_Port, IBlue_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PA3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  /*Configure GPIO pin : GPIO_Output_Pin */
+  GPIO_InitStruct.Pin = GPIO_Output_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIO_Output_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  /*Configure GPIO pin : IBlue_Pin */
+  GPIO_InitStruct.Pin = IBlue_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(IBlue_GPIO_Port, &GPIO_InitStruct);
 
 }
 
