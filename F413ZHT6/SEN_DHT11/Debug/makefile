@@ -61,7 +61,7 @@ main-build: SEN_DHT11.elf secondary-outputs
 
 # Tool invocations
 SEN_DHT11.elf SEN_DHT11.map: $(OBJS) $(USER_OBJS) E:\Mysrc\EmbeddedSystems\RTOS\F413ZHT6\SEN_DHT11\STM32F413ZHTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "SEN_DHT11.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"E:\Mysrc\EmbeddedSystems\RTOS\F413ZHT6\SEN_DHT11\STM32F413ZHTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SEN_DHT11.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+	arm-none-eabi-gcc -o "SEN_DHT11.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"E:\Mysrc\EmbeddedSystems\RTOS\F413ZHT6\SEN_DHT11\STM32F413ZHTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SEN_DHT11.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

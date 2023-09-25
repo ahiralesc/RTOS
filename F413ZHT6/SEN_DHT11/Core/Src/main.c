@@ -87,8 +87,8 @@ void set_pin_input(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin) {
 }
 
 /* **************** Start DHT11 Functions **************** */
-#define DHT11_PORT GPIOA
-#define DHT11_PIN GPIO_PIN_1
+#define DHT11_PORT DHT11_Sen_GPIO_Port
+#define DHT11_PIN DHT11_Sen_Pin
 
 void DHT11_start(void){
 	set_pin_output(DHT11_PORT, DHT11_PIN);
@@ -99,7 +99,7 @@ void DHT11_start(void){
 	set_pin_input(DHT11_PORT, DHT11_PIN);
 }
 
-uint8_t DHT11_check_response(void){
+uint8_t DHT11_state(void){
 	uint8_t response = 0;
 	delay(40);
 	if(!(HAL_GPIO_ReadPin(DHT11_PORT, DHT11_PIN))){
@@ -165,13 +165,29 @@ int main(void)
   MX_TIM6_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_Base_Start_IT(&htim6);
+  char snd_buff[20] = {0};
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  DHT11_start();
+	  state = DHT11_state();
+	  uint8_t rh_byte1 = DHT11_read();
+	  uint8_t rh_byte2 = DHT11_read();
+	  uint8_t temp_byte1 = DHT11_read();
+	  uint8_t temp_byte2 = DHT11_read();
+	  uint8_t checksum = DHT11_read();
+	  temperature = (float) temp_byte1;
+	  humidity = (float) rh_byte1;
+
+	  sprintf(snd_buff, "Temp: %.2f\r\n", temperature);
+	  HAL_UART_Transmit_IT(&huart3, snd_buff, sizeof(snd_buff));
+	  sprintf(snd_buff, "Hum: %.2f\r\n", humidity );
+	  HAL_UART_Transmit_IT(&huart3, snd_buff, sizeof(snd_buff));
+	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
