@@ -87,8 +87,8 @@ void set_pin_input(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin) {
 }
 
 /* **************** Start DHT11 Functions **************** */
-#define DHT11_PORT DHT11_Sen_GPIO_Port
-#define DHT11_PIN DHT11_Sen_Pin
+#define DHT11_PORT DHT11_PA3_GPIO_Port
+#define DHT11_PIN DHT11_PA3_Pin
 
 void DHT11_start(void){
 	set_pin_output(DHT11_PORT, DHT11_PIN);
@@ -141,7 +141,7 @@ uint8_t DHT11_read(void){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	char snd_buff[20] = {0};
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -166,27 +166,37 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim6);
-  char snd_buff[20] = {0};
+
+  sprintf(snd_buff, "Incia inst %d\r\n", 0);
+  HAL_UART_Transmit_IT(&huart3, snd_buff, sizeof(snd_buff));
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  DHT11_start();
+/*	  DHT11_start();
 	  state = DHT11_state();
-	  uint8_t rh_byte1 = DHT11_read();
-	  uint8_t rh_byte2 = DHT11_read();
-	  uint8_t temp_byte1 = DHT11_read();
-	  uint8_t temp_byte2 = DHT11_read();
-	  uint8_t checksum = DHT11_read();
-	  temperature = (float) temp_byte1;
-	  humidity = (float) rh_byte1;
+	  if(state) {
+		  uint8_t rh_byte1 = DHT11_read();
+		  uint8_t rh_byte2 = DHT11_read();
+		  uint8_t temp_byte1 = DHT11_read();
+		  uint8_t temp_byte2 = DHT11_read();
+		  uint8_t checksum = DHT11_read();
+		  temperature = (float) temp_byte1;
+		  humidity = (float) rh_byte1;
 
-	  sprintf(snd_buff, "Temp: %.2f\r\n", temperature);
-	  HAL_UART_Transmit_IT(&huart3, snd_buff, sizeof(snd_buff));
-	  sprintf(snd_buff, "Hum: %.2f\r\n", humidity );
-	  HAL_UART_Transmit_IT(&huart3, snd_buff, sizeof(snd_buff));
+		  sprintf(snd_buff, "Temp: %.2f\r\n", temperature);
+		  HAL_UART_Transmit_IT(&huart3, snd_buff, sizeof(snd_buff));
+		  sprintf(snd_buff, "Hum: %.2f\r\n", humidity );
+		  HAL_UART_Transmit_IT(&huart3, snd_buff, sizeof(snd_buff));
+	  }else{
+		  sprintf(snd_buff, "valio\r\n", temperature);
+		  HAL_UART_Transmit_IT(&huart3, snd_buff, sizeof(snd_buff));
+	  }*/
+
+	  sprintf(snd_buff, "basura %d\r\n", 0);
+	    HAL_UART_Transmit_IT(&huart3, snd_buff, sizeof(snd_buff));
 	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
@@ -215,13 +225,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 50;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 2;
-  RCC_OscInitStruct.PLL.PLLR = 2;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -231,12 +235,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -323,19 +327,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(DHT11_PA3_GPIO_Port, DHT11_PA3_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PA1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  /*Configure GPIO pin : DHT11_PA3_Pin */
+  GPIO_InitStruct.Pin = DHT11_PA3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(DHT11_PA3_GPIO_Port, &GPIO_InitStruct);
 
 }
 
