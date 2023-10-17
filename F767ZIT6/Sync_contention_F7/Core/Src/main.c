@@ -293,10 +293,10 @@ void toggleGreenHook(void *argument)
   for(;;)
   {
 	  HAL_GPIO_WritePin(EGreen_GPIO_Port, EGreen_Pin, GPIO_PIN_SET);
-	  osDelay(3000);
+	  HAL_Delay(3000);
 	  shared_function();
 	  HAL_GPIO_WritePin(EGreen_GPIO_Port, EGreen_Pin, GPIO_PIN_RESET);
-	  osDelay(500);
+	  HAL_Delay(500);
   }
   /* USER CODE END toggleGreenHook */
 }
@@ -315,10 +315,10 @@ void toggleRedHook(void *argument)
   for(;;)
   {
 	  HAL_GPIO_WritePin(ERed_GPIO_Port, ERed_Pin, GPIO_PIN_SET);
-	  osDelay(1000);
+	  HAL_Delay(1000);
 	  shared_function();
 	  HAL_GPIO_WritePin(ERed_GPIO_Port, ERed_Pin, GPIO_PIN_RESET);
-	  osDelay(500);
+	  HAL_Delay(500);
   }
   /* USER CODE END toggleRedHook */
 }
