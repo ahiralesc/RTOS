@@ -320,7 +320,7 @@ static void MX_TIM6_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM6_Init 2 */
-
+  htim6.Init.RepetitionCounter = 0;
   /* USER CODE END TIM6_Init 2 */
 
 }
