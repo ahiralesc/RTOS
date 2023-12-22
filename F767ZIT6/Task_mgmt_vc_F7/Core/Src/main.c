@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -93,7 +94,14 @@ void gp_led_TaskImpl(void *argument);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-// 1. Definition of the control msg buffer
+/* 1. Define the message format sent by the
+ *  JSON format
+ *  {
+ *  	ST: LED, CO2, PIR, ... // Sensor Type (ST)
+ *  	ID:01, 02, ...         // Sensor ID   (ID)
+ *  	CMD:XON, OFF,          // command
+ *  }
+ * */
 uint8_t command[16];
 
 // 2. Define the message queue message format.
@@ -102,7 +110,27 @@ typedef struct{
 	uint8_t sID;
 } MSQ_TYPE;
 
-#define FLAGS_MSK 0x00000001U
+
+#define CMD_RX_EVNT  0x00000001U // Command received event.
+#define LED_ON_EVNT  0x00000002U // LED on event.
+#define LED_OFF_EVNT 0x00000004U // LED off event.
+
+
+
+// 6. Wrapper that initiate event flags
+void ledControl(const uint8_t *args);
+void c02Control(const uint8_t *args);
+
+// Perhaps a hash table be better
+struct {
+	char *command;
+	void(*funcion)();
+} commandList[] = {
+	{"led", ledControl},
+	{"c02", c02Control}
+};
+
+
 /* USER CODE END 0 */
 
 /**
@@ -321,8 +349,17 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	}
 
 	// 4. Notify the control task (controlTaskImpl)
-	osEventFlagsSet(cmdEventHandle, FLAGS_MSK);
+	osEventFlagsSet(cmdEventHandle, CMD_RX_EVNT);
 }
+
+
+void ledControl(const uint8_t *args){
+	char id[4];
+	// Extract the ID and option
+	strncpy(id, (char*)args, 3);
+	id[3] = '\x0';
+}
+
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -355,17 +392,38 @@ void controlTaskImpl(void *argument)
 	/* USER CODE BEGIN controlTaskImpl */
 	osStatus_t status;
 	MSQ_TYPE msg;
+	char cmd[5];
+	char arg[10];
 
 	/* Infinite loop */
 	for(;;)
 	{
 		// 5. Block/unblock a the task
-		osEventFlagsWait(cmdEventHandle, FLAGS_MSK, osFlagsWaitAny, osWaitForever);
+		osEventFlagsWait(cmdEventHandle, CMD_RX_EVNT, osFlagsWaitAll, osWaitForever);
 
 		// 6. Extract the message from the control
 		status = osMessageQueueGet(controlMsgQueueHandle, &msg, NULL, 0U);
 		if(status == osOK){
-			msg.buffer
+
+			// Extract the Command. First three characters.
+			strncpy(cmd, (char*)msg.buffer,3);
+			cmd[3] = '\0';
+
+			// Extract the Sensor id and arguments
+			strncpy(arg, msg.buffer+4, strlen(msg.buffer)-4);
+
+			// It is better to use a hash table
+			int i, found = 0;
+			for(i=0; i<sizeof(commandList)/sizeof(commandList[0]); i++){
+				if(strcmp(cmd, commandList[i].command) == 0){
+					commandList[i].funcion(arg);
+					break;
+				}
+			}
+
+			if(!found){
+				; //log the error
+			}
 		}
 		osThreadYield();
 
