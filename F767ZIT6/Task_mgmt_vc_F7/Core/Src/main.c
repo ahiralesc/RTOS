@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "core_json.h"
 #include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
@@ -94,15 +95,16 @@ void gp_led_TaskImpl(void *argument);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-/* 1. Define the message format sent by the
- *  JSON format
- *  {
- *  	ST: LED, CO2, PIR, ... // Sensor Type (ST)
- *  	ID:01, 02, ...         // Sensor ID   (ID)
- *  	CMD:XON, OFF,          // command
+/*
+ * Control message format Ver. 1.
+ *  char ctrl_msg[] =
+ *  "{
+ *  	\"sen\":\"<three letter code i.e. LED, C02, PIR>\",
+ *  	\"sid\":\"<two integer code i.e. 01, 02, ...>\",
+ *  	\"cmd\":\"<three letter sensor command i.e. XON, OFF, JAW, >\",
+ *  	\"tid\":\"<unique transaction id i.e. date-time>\"
  *  }
  * */
-uint8_t command[16];
 
 // 2. Define the message queue message format.
 typedef struct{
@@ -334,22 +336,27 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	MSQ_TYPE msg;
-	osStatus_t status;
+	char			buffer[30];
+	MSQ_TYPE    	msg;
+	osStatus_t   	msq_status;
+	JSONStatus_t 	json_status;
 
-	HAL_UART_Receive_IT(&huart3, command, sizeof(command));
+	// Receive a fixed size JSON formatted message
+	HAL_UART_Receive_IT(&huart3, buffer, sizeof(buffer));
+	// Validate that the JSON message format is correct
+	json_status = JSON_Validate(buffer, sizeof(buffer)-1);
 
-	// 3. Indicate that control messages come from a view
-	strcpy(msg.buffer, command);
-	msg.sID    = 0U;
-	status = osMessageQueuePut(controlMsgQueueHandle, &msg, 0U, 0U);
-
-	if( status != osOK ){
-		; // log the error
+	if(json_status == JSONSuccess) {
+		// Prepare the control message
+		strcpy(msg.buffer, buffer);
+		msg.sID = 0U;
+		// Place the control message in the message queue
+		msq_status = osMessageQueuePut(controlMsgQueueHandle, &msg, 0U, 0U);
+		if(msq_status == osOk){
+			// Signal the control task
+			osEventFlagsSet(cmdEventHandle, CMD_RX_EVNT);
+		}
 	}
-
-	// 4. Notify the control task (controlTaskImpl)
-	osEventFlagsSet(cmdEventHandle, CMD_RX_EVNT);
 }
 
 
@@ -390,27 +397,46 @@ void StartDefaultTask(void *argument)
 void controlTaskImpl(void *argument)
 {
 	/* USER CODE BEGIN controlTaskImpl */
-	osStatus_t status;
+	osStatus_t   msq_status;
+	JSONStatus_t json_status;
+	char key[] = "st";
+	char *value;
+	size_t valueLength;
 	MSQ_TYPE msg;
-	char cmd[5];
-	char arg[10];
 
 	/* Infinite loop */
 	for(;;)
 	{
-		// 5. Block/unblock a the task
+		/*
+		 * Block the task until it is notified that a control message has been placed in the
+		 * control message queue. The notification is re-setted to its initial setting.
+		 */
 		osEventFlagsWait(cmdEventHandle, CMD_RX_EVNT, osFlagsWaitAll, osWaitForever);
 
-		// 6. Extract the message from the control
-		status = osMessageQueueGet(controlMsgQueueHandle, &msg, NULL, 0U);
-		if(status == osOK){
+		// Extract the control message from the message queue
+		msq_status = osMessageQueueGet(controlMsgQueueHandle, &msg, NULL, 0U);
+		if(msq_status == osOK) {
 
-			// Extract the Command. First three characters.
-			strncpy(cmd, (char*)msg.buffer,3);
-			cmd[3] = '\0';
+			// Extract the requested command and its arguments
+			json_status = JSON_Search( msg.buffer, sizeof(msg.buffer)-1,
+					key, sizeof(key)-1, &value, &valueLength );
 
-			// Extract the Sensor id and arguments
-			strncpy(arg, msg.buffer+4, strlen(msg.buffer)-4);
+			if(json_status == JSONSuccess) {
+				/*
+				 * An object (I/O) Each I/O object hash its state. A task manages an object
+				 * based on its state. The task either blocks or change behavior when state
+				 * change occurs.
+				 *
+				 */
+
+			/*
+			 * The object attributed are:
+			 * - The sensor handle.
+			 * - The sensor/actuator state.
+			 * - The sensor/actuator notification flag.
+			 */
+
+			}
 
 			// It is better to use a hash table
 			int i, found = 0;
