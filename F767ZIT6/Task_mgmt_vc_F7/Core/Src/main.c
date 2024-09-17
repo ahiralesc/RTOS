@@ -19,8 +19,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-#include "core_json.h"
-#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -50,26 +48,43 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for controlTask */
-osThreadId_t controlTaskHandle;
-const osThreadAttr_t controlTask_attributes = {
-  .name = "controlTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for gp_led_Task */
-osThreadId_t gp_led_TaskHandle;
-const osThreadAttr_t gp_led_Task_attributes = {
-  .name = "gp_led_Task",
-  .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
-/* Definitions for controlMsgQueue */
-osMessageQueueId_t controlMsgQueueHandle;
-const osMessageQueueAttr_t controlMsgQueue_attributes = {
-  .name = "controlMsgQueue"
+/* Definitions for coordTask */
+osThreadId_t coordTaskHandle;
+const osThreadAttr_t coordTask_attributes = {
+  .name = "coordTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
+/* Definitions for controlTaskOne */
+osThreadId_t controlTaskOneHandle;
+const osThreadAttr_t controlTaskOne_attributes = {
+  .name = "controlTaskOne",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for controlTaskTwo */
+osThreadId_t controlTaskTwoHandle;
+const osThreadAttr_t controlTaskTwo_attributes = {
+  .name = "controlTaskTwo",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for coordQueue */
+osMessageQueueId_t coordQueueHandle;
+const osMessageQueueAttr_t coordQueue_attributes = {
+  .name = "coordQueue"
+};
+/* Definitions for crtQueueOne */
+osMessageQueueId_t crtQueueOneHandle;
+const osMessageQueueAttr_t crtQueueOne_attributes = {
+  .name = "crtQueueOne"
+};
+/* Definitions for crtQueueTwo */
+osMessageQueueId_t crtQueueTwoHandle;
+const osMessageQueueAttr_t crtQueueTwo_attributes = {
+  .name = "crtQueueTwo"
 };
 /* Definitions for cmdEvent */
 osEventFlagsId_t cmdEventHandle;
@@ -85,8 +100,9 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 void StartDefaultTask(void *argument);
-void controlTaskImpl(void *argument);
-void gp_led_TaskImpl(void *argument);
+void coordTaskImpl(void *argument);
+void controlTaskOneImpl(void *argument);
+void controlTaskTwoImpl(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -97,18 +113,26 @@ void gp_led_TaskImpl(void *argument);
 
 /*
  * Control message format Ver. 1.
- *  char ctrl_msg[] =
- *  "{
- *  	\"sen\":\"<three letter code i.e. LED, C02, PIR>\",
- *  	\"sid\":\"<two integer code i.e. 01, 02, ...>\",
- *  	\"cmd\":\"<three letter sensor command i.e. XON, OFF, JAW, >\",
- *  	\"tid\":\"<unique transaction id i.e. date-time>\"
- *  }
+ *  char ctrl_msg[] = {
+ *		"sen": "XYZ",  // 3 character sensor type
+ *  	"sid": "123",  // 3 digit sensor id
+ *  	"cmd": "ON_",  // 3 character command
+ *		"dur": "045",  // 3 digit duration in minutes
+ *		"val": "075",  // 3 digit value (optional, depending on the sensor type)
+ *		"sts": "OK_",  // 3 character status (OK_, ERR, etc.)
+ *	}
+ * Example messages :
+ * REL001ON_005162OK_000---
+ * CO2003MEA120162OK_400PPM
  * */
 
+
 // 2. Define the message queue message format.
+
+#define MSG_SZ 46
+
 typedef struct{
-	uint8_t buffer[16];
+	uint8_t buffer[MSG_SZ];
 	uint8_t sID;
 } MSQ_TYPE;
 
@@ -116,21 +140,6 @@ typedef struct{
 #define CMD_RX_EVNT  0x00000001U // Command received event.
 #define LED_ON_EVNT  0x00000002U // LED on event.
 #define LED_OFF_EVNT 0x00000004U // LED off event.
-
-
-
-// 6. Wrapper that initiate event flags
-void ledControl(const uint8_t *args);
-void c02Control(const uint8_t *args);
-
-// Perhaps a hash table be better
-struct {
-	char *command;
-	void(*funcion)();
-} commandList[] = {
-	{"led", ledControl},
-	{"c02", c02Control}
-};
 
 
 /* USER CODE END 0 */
@@ -184,8 +193,14 @@ int main(void)
   /* USER CODE END RTOS_TIMERS */
 
   /* Create the queue(s) */
-  /* creation of controlMsgQueue */
-  controlMsgQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &controlMsgQueue_attributes);
+  /* creation of coordQueue */
+  coordQueueHandle = osMessageQueueNew (16, sizeof(MSQ_TYPE), &coordQueue_attributes);
+
+  /* creation of crtQueueOne */
+  crtQueueOneHandle = osMessageQueueNew (16, sizeof(MSQ_TYPE), &crtQueueOne_attributes);
+
+  /* creation of crtQueueTwo */
+  crtQueueTwoHandle = osMessageQueueNew (16, sizeof(MSQ_TYPE), &crtQueueTwo_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -195,11 +210,14 @@ int main(void)
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-  /* creation of controlTask */
-  controlTaskHandle = osThreadNew(controlTaskImpl, NULL, &controlTask_attributes);
+  /* creation of coordTask */
+  coordTaskHandle = osThreadNew(coordTaskImpl, NULL, &coordTask_attributes);
 
-  /* creation of gp_led_Task */
-  gp_led_TaskHandle = osThreadNew(gp_led_TaskImpl, NULL, &gp_led_Task_attributes);
+  /* creation of controlTaskOne */
+  controlTaskOneHandle = osThreadNew(controlTaskOneImpl, NULL, &controlTaskOne_attributes);
+
+  /* creation of controlTaskTwo */
+  controlTaskTwoHandle = osThreadNew(controlTaskTwoImpl, NULL, &controlTaskTwo_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -208,9 +226,6 @@ int main(void)
   /* Create the event(s) */
   /* creation of cmdEvent */
   cmdEventHandle = osEventFlagsNew(&cmdEvent_attributes);
-  if (cmdEventHandle == NULL) {
-    ; // Log the failure if anything goes wrong
-  }
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
@@ -222,6 +237,8 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+
   while (1)
   {
     /* USER CODE END WHILE */
@@ -336,7 +353,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	char			buffer[30];
+	char			buffer[MSG_SZ];
 	MSQ_TYPE    	msg;
 	osStatus_t   	msq_status;
 	JSONStatus_t 	json_status;
@@ -352,7 +369,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		msg.sID = 0U;
 		// Place the control message in the message queue
 		msq_status = osMessageQueuePut(controlMsgQueueHandle, &msg, 0U, 0U);
-		if(msq_status == osOk){
+		if(msq_status == 0){
 			// Signal the control task
 			osEventFlagsSet(cmdEventHandle, CMD_RX_EVNT);
 		}
@@ -378,101 +395,67 @@ void ledControl(const uint8_t *args){
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
-	/* USER CODE BEGIN 5 */
+  /* USER CODE BEGIN 5 */
 	/* Infinite loop */
 	for(;;)
 	{
 		osDelay(1);
 	}
-	/* USER CODE END 5 */
+  /* USER CODE END 5 */
 }
 
-/* USER CODE BEGIN Header_controlTaskImpl */
+/* USER CODE BEGIN Header_coordTaskImpl */
 /**
-* @brief Function implementing the controlTask thread.
+* @brief Function implementing the coordTask thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_controlTaskImpl */
-void controlTaskImpl(void *argument)
+/* USER CODE END Header_coordTaskImpl */
+void coordTaskImpl(void *argument)
 {
-	/* USER CODE BEGIN controlTaskImpl */
-	osStatus_t   msq_status;
-	JSONStatus_t json_status;
-	char key[] = "st";
-	char *value;
-	size_t valueLength;
-	MSQ_TYPE msg;
-
-	/* Infinite loop */
-	for(;;)
-	{
-		/*
-		 * Block the task until it is notified that a control message has been placed in the
-		 * control message queue. The notification is re-setted to its initial setting.
-		 */
-		osEventFlagsWait(cmdEventHandle, CMD_RX_EVNT, osFlagsWaitAll, osWaitForever);
-
-		// Extract the control message from the message queue
-		msq_status = osMessageQueueGet(controlMsgQueueHandle, &msg, NULL, 0U);
-		if(msq_status == osOK) {
-
-			// Extract the requested command and its arguments
-			json_status = JSON_Search( msg.buffer, sizeof(msg.buffer)-1,
-					key, sizeof(key)-1, &value, &valueLength );
-
-			if(json_status == JSONSuccess) {
-				/*
-				 * An object (I/O) Each I/O object hash its state. A task manages an object
-				 * based on its state. The task either blocks or change behavior when state
-				 * change occurs.
-				 *
-				 */
-
-			/*
-			 * The object attributed are:
-			 * - The sensor handle.
-			 * - The sensor/actuator state.
-			 * - The sensor/actuator notification flag.
-			 */
-
-			}
-
-			// It is better to use a hash table
-			int i, found = 0;
-			for(i=0; i<sizeof(commandList)/sizeof(commandList[0]); i++){
-				if(strcmp(cmd, commandList[i].command) == 0){
-					commandList[i].funcion(arg);
-					break;
-				}
-			}
-
-			if(!found){
-				; //log the error
-			}
-		}
-		osThreadYield();
-
-	}
-	/* USER CODE END controlTaskImpl */
-}
-
-/* USER CODE BEGIN Header_gp_led_TaskImpl */
-/**
-* @brief Function implementing the gp_led_Task thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_gp_led_TaskImpl */
-void gp_led_TaskImpl(void *argument)
-{
-  /* USER CODE BEGIN gp_led_TaskImpl */
+  /* USER CODE BEGIN coordTaskImpl */
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
-  /* USER CODE END gp_led_TaskImpl */
+  /* USER CODE END coordTaskImpl */
+}
+
+/* USER CODE BEGIN Header_controlTaskOneImpl */
+/**
+* @brief Function implementing the controlTaskOne thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_controlTaskOneImpl */
+void controlTaskOneImpl(void *argument)
+{
+  /* USER CODE BEGIN controlTaskOneImpl */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END controlTaskOneImpl */
+}
+
+/* USER CODE BEGIN Header_controlTaskTwoImpl */
+/**
+* @brief Function implementing the controlTaskTwo thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_controlTaskTwoImpl */
+void controlTaskTwoImpl(void *argument)
+{
+  /* USER CODE BEGIN controlTaskTwoImpl */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END controlTaskTwoImpl */
 }
 
 /**

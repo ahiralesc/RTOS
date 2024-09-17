@@ -256,14 +256,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		// 6. Read the first timestamp (counter register)
 			timer_val = __HAL_TIM_GET_COUNTER(&htim6);
 
-			// 7. Do some work
-			for(int i=0; i<=80; i++);
+			// 7. Do some work. 80 it gives 13ms, 90 gives 15ms, 100 gives 16 ms
+			for(int i=0; i<=100; i++);
 
 			// 8. Read the second timestamp and computer the counter difference
 			timer_val = __HAL_TIM_GET_COUNTER(&htim6) - timer_val;
 
 			// 9. Transform an unsigned int value to a string
-			buffer_len = sprintf(buffer,"%u us\r\n", timer_val);
+			buffer_len = sprintf(buffer,"%u ms\r\n", timer_val);
 
 			// 10. Send data to UART3
 			HAL_UART_Transmit(&huart3, (uint8_t *) buffer, buffer_len, 10);

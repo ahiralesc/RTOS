@@ -128,7 +128,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   sTime.Hours = 0x08;
   sTime.Minutes = 0x52;
-  sTime.Seconds = 0x0;
+  sTime.Seconds = 0x00;
 
   if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
   {
