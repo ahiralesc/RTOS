@@ -22,15 +22,7 @@ See [project specification](https://github.com/ahiralesc/RTOS/blob/main/F767ZIT6
 - During a period of 2s, it must toggle the red LED on/off at a frequency of 20Hz.
 - At completion, it must toggle OFF the yellow LED. 
 
-This solution uses **timers** to create keep tasks in execution before yielding control. The general logic of the solution is the following:
-
-C```
-
-```
+This solution uses **timers** to create keep tasks in execution before yielding control. 
 
 
-<center>
-<figure>
-<img align="center" width="300" height="300" src="img/trace1.png" alt="">
-</figure>
-</center>
+![Trace 1](img/trace1.png)
