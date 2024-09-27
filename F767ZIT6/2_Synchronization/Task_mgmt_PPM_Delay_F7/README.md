@@ -2,7 +2,7 @@
 
 **Project description**
 
-The project comes from J. Cooling (1017), from his book *Real-time Operating Systems*. The challenge is to create a two task multitasking application. Tasks must be periodic and perform work at a frequency of 20Hz. Thus, the main challenges are to ensure that peridoc tasks starting deadlines are met and that work is performed at the specified drequency. Work is emulated by toggling LEDs on and off.  
+The project comes from J. Cooling (1017), from his book *Real-time Operating Systems*. The challenge is to create a two task multitasking application. Tasks must be periodic and perform work at a frequency of 20Hz. Thus, the main challenges are to ensure that periodic tasks starting deadlines are met and that work is performed at the specified frequency. Work is emulated by toggling LEDs on and off.  
 
 **Components**
 - STM32 Microcontroller. Set up using an RTOS (e.g., FreeRTOS).
@@ -22,4 +22,15 @@ See [project specification](https://github.com/ahiralesc/RTOS/blob/main/F767ZIT6
 - During a period of 2s, it must toggle the red LED on/off at a frequency of 20Hz.
 - At completion, it must toggle OFF the yellow LED. 
 
+This solution uses **timers** to create keep tasks in execution before yielding control. The general logic of the solution is the following:
 
+C```
+
+```
+
+
+<center>
+<figure>
+<img align="center" width="300" height="300" src="img/trace1.png" alt="">
+</figure>
+</center>
