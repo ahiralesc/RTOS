@@ -24,8 +24,10 @@ This solution uses **timers** to create keep tasks in execution before yielding 
 - [specification](https://github.com/ahiralesc/RTOS/blob/main/F767ZIT6/2_Synchronization/Task_mgmt_PPM_Delay_F7/Task_mgmt_PPM_Delay_F7.pdf) for CubeMX settup. 
 - And ```src/main.c``` for solution.
 
-Notice how task timing and toggling constrains are meet (Fig. 1 and Fig. 2).
 
 ![Trace 1](img/trace1.png "Fig 1. Task timing constraints")
+Fig. 1 Illustrates ToggleGreenTask and ToggleRedTask periods are correct. 
 
-![Trace 1](img/trace1.png "Fig 2. Task toggling rate constraints")
+
+![Trace 1](img/trace2.png "Fig 2. Task toggling rate constraints")
+Fig. 2 Illustrates that toggling frequency is nearly correct (19.2 Hz).  
