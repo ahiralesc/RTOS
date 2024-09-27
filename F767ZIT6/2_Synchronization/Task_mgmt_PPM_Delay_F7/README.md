@@ -9,8 +9,6 @@ The project comes from J. Cooling (1017), from his book *Real-time Operating Sys
 - Four different color LEDs connected to GPIO pins of the STM32. 
 - Two periodic Tasks. Each task controls the blinking of two LEDs.
 
-See [project specification](https://github.com/ahiralesc/RTOS/blob/main/F767ZIT6/2_Synchronization/Task_mgmt_PPM_Delay_F7/Task_mgmt_PPM_Delay_F7.pdf) for CubeMX settup.
-
 **Task behavior**
 *ToggleGreenTask* must execute periodically every 6s:
 - At startup, it must toggle ON the blue LED. 
@@ -22,7 +20,12 @@ See [project specification](https://github.com/ahiralesc/RTOS/blob/main/F767ZIT6
 - During a period of 2s, it must toggle the red LED on/off at a frequency of 20Hz.
 - At completion, it must toggle OFF the yellow LED. 
 
-This solution uses **timers** to create keep tasks in execution before yielding control. 
+This solution uses **timers** to create keep tasks in execution before yielding control. See
+- [specification](https://github.com/ahiralesc/RTOS/blob/main/F767ZIT6/2_Synchronization/Task_mgmt_PPM_Delay_F7/Task_mgmt_PPM_Delay_F7.pdf) for CubeMX settup. 
+- And ```src/main.c``` for solution.
 
+Notice how task timing and toggling constrains are meet (Fig. 1 and Fig. 2).
 
-![Trace 1](img/trace1.png)
+![Trace 1](img/trace1.png "Fig 1. Task timing constraints")
+
+![Trace 1](img/trace1.png "Fig 2. Task toggling rate constraints")
