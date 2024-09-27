@@ -2,7 +2,7 @@
 
 **Project description**
 
-The project comes from J. Cooling (1017), from his book *Real-time Operating Systems*. The challenge is to create a two task multitasking application. Tasks must be periodic and perform work at a frequency of 20Hz. Thus, the main challenges are to ensure that periodic tasks starting deadlines are met and that work is performed at the specified frequency. Work is emulated by toggling LEDs on and off.  
+The project comes from J. Cooling (2017), from his book *Real-time Operating Systems*. The challenge is to create a two task multitasking application. Tasks must be periodic and perform work at a frequency of 20Hz. Thus, the main challenges are to ensure that periodic tasks starting deadlines are met and that work is performed at the specified frequency. Work is emulated by toggling LEDs on and off.  
 
 **Components**
 - STM32 Microcontroller. Set up using an RTOS (e.g., FreeRTOS).

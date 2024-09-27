@@ -302,16 +302,16 @@ void StartDefaultTask(void *argument)
 void toggleGreenHook(void *argument)
 {
   /* USER CODE BEGIN toggleGreenHook */
-
+	// ToggleGreenTask must execute periodically every 6s:
 	TickType_t tickCount;
 	TickType_t frecuency = 25; //25 instead of 50
 	tickCount = xTaskGetTickCount();
 	/* Infinite loop */
 	for(;;)
 	{
-
+		// During a period of 4s, it must toggle the green LED on/off at a frequency of 20Hz.
 		HAL_GPIO_WritePin(EBlue_GPIO_Port, EBlue_Pin, GPIO_PIN_SET);
-		for (int i=0;i<80;i++){ // Toggle 20HZ for 4 seconds
+		for (int i=0;i<40;i++){ // Toggle 20HZ for 4 seconds
 			HAL_GPIO_TogglePin(EGreen_GPIO_Port, EGreen_Pin);
 			vTaskDelayUntil(&tickCount, frecuency);
 		}
@@ -342,7 +342,7 @@ void toggleRedHook(void *argument)
   {
 
 	  HAL_GPIO_WritePin(EYellow_GPIO_Port, EYellow_Pin, GPIO_PIN_SET);
-	  for (int i=0;i<20;i++){ // Toggle at 20HZ for 1 second
+	  for (int i=0;i<40;i++){ // Toggle at 20HZ for 1 second
 		  HAL_GPIO_TogglePin(ERed_GPIO_Port, ERed_Pin);
 		  vTaskDelayUntil(&tickCount, frecuency);
 	  }
