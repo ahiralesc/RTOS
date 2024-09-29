@@ -399,7 +399,7 @@ void toggleGreenHook(void *argument)
 				 * The time length is of approximately 1s. Thus we need to count 4 times
 				 * if vc1 has reached zero (interrupt). This is done in HAL_TIM_PeriodElapsedCallback.
 				 */
-		while(vc1 <= 3){
+		while(vc1 <= 3){ //5
 			HAL_GPIO_TogglePin(EGreen_GPIO_Port, EGreen_Pin);
 			HAL_Delay(25);
 		}
@@ -429,7 +429,7 @@ void toggleRedHook(void *argument)
 {
   /* USER CODE BEGIN toggleRedHook */
 	/* The task ACTIVE/INACTIVE frequency length */
-		TickType_t frequency = 4000;
+		TickType_t frequency = 2000;
 
 		/* Get the current tick count */
 		TickType_t tickCount = xTaskGetTickCount();
