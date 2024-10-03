@@ -9,7 +9,8 @@ The aim of the task management projects is to highlight the impact of poor task 
 |:--:|:------|:------|
 |I.1|[Persistent task](https://github.com/ahiralesc/RTOS/tree/main/F767ZIT6/Task_mgmt_persistent)|shows how to create a persistent task in RTOS|
 |I.2|[Periodic task](https://github.com/ahiralesc/RTOS/tree/main/F767ZIT6/Task_mgmt_periodic)|shows how to create a periodic task in RTOS|
-|I.3|[Task frequency  regulation](https://github.com/ahiralesc/RTOS/tree/main/F767ZIT6/Task_mgmt_frequency_regulation)|shows how to regulate the task frequency of a periodic task| 
+|I.3|[Aperiodic task](https://github.com/ahiralesc/RTOS/tree/main/F767ZIT6/Task_mgmt_frequency_regulation)|shows how to regulate the task frequency of a periodic task|
+|I.4|[Mix workload]()|what happend to temporal constraints of an independent task is contention among other tasks is not resolved properly. I call this example performace degradation| 
 
 ## II. Multitasking and synchronization
 
