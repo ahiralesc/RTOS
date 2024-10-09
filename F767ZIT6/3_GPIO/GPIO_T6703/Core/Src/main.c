@@ -159,7 +159,7 @@ int main(void)
 	  /* Transmit the message via UART3 */
 	  HAL_UART_Transmit(&huart3, snd_buff, strlen(snd_buff), 100);
 
-	  HAL_Delay(1500);
+	  HAL_Delay(5000);	// The module updates the signal every 5s
 
     /* USER CODE END WHILE */
 

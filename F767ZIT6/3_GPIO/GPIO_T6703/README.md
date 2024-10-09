@@ -1,8 +1,12 @@
-### Periodic Multitasking
+### Telaire 6703 CO2 Module
 
 **Project description**
 
-The project comes from J. Cooling (2017), from his book *Real-time Operating Systems*. The challenge is to create a two task multitasking application. Tasks must be periodic and perform work at a frequency of 20Hz. Thus, the main challenges are to ensure that periodic tasks starting deadlines are met and that work is performed at the specified frequency. Work is emulated by toggling LEDs on and off.  
+The objective of the project is to monitor CO2 via the Telaire 6703 (T6703) series $CO_2$ module. The unit is factory calibrated to measure $CO_2$ levels up to 5000 ppm. It uses Non Dispersive Infrared (NDIR) diffusion sampling and applies a logic self calibrated algorithm during sampling. See T6703 datasheet
+
+The module warm-up time is of 2m. It updates the signal every 5s. The solution omits the 2m warm-up interval, you can just eliminate the first two minutes of data. A poll request is sent every 5s via USART. Each request is followed by a 0.5s delay which is intended to give time to T6703 to respond the request via an interrupt, also produced by USART. The response is written to a buffer which is then transmitted to another USART port. The output can be rendered in a MobaXterm terminal. 
+
+  
 
 **Components**
 - STM32 Microcontroller. Set up using an RTOS (e.g., FreeRTOS).
