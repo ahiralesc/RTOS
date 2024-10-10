@@ -112,7 +112,28 @@ class deque:
         return 'deque({})'.format(self.q)
 ```
 
-With that done you can do USART communication with STM32 as follows
+With that done I built an UART wrapper to do buffered communication as follows:
+
+```Python
+from machine import UART
+
+class UART_Wrapper:
+    def __init__(self, uid, baudrate=115200):
+        self.uart_port = UART(uid, baudrate)
+
+    # Gets sz bytes from the UART port
+    def poll(self, sz=-1):
+        if(sz == -1):
+            return self.uart_port.read()
+        else: 
+            return self.uart_port.read(sz)
+
+    def size(self):
+        return self.uart_port.any()
+```
+
+Now you can connect to another module i.e. STM32 using buffered communication
+
 
 ```Python
 from machine import Timer
