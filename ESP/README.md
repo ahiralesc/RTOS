@@ -24,9 +24,15 @@ Note. The ESP module can operate in two modes: bootloader mode and boot mode. Fo
 Once done. You can connect to the module. There are several ways to do this, via:
 1. [Picocom](https://linux.die.net/man/8/picocom), a minimalistic dumb-terminal emulator.
 2. [MicroPython Kernel](https://github.com/goatchurchprime/jupyter_micropython_kernel/). For this option, see the [MicroPython on ESP Using Jupyter Notebook](https://towardsdatascience.com/micropython-on-esp-using-jupyter-6f366ff5ed9) tutorial.
-3. [Mu Editor][https://codewith.mu/]. A simple python editor for coding with micropython. This is the approach I use. 
+3. [Mu Editor][https://codewith.mu/]. A simple python editor for coding with micropython.  
 
-##
+### Connecting via micropyho kernel 
+
+First lest connect the notebook by doing 
+
+```Python
+%serialconnect to --port=/dev/ttyUSB0 --baud=115200
+```
 
 
 Have fun, yours truly: 
