@@ -8,18 +8,15 @@ Before coding, the ESP module must be flashed. Flashing erases any existing data
 
 To install the firm ware do:
 1. **Install the esptool**: 
-```bash
-# pip install esptool```. 
+```bash pip install esptool```. 
 
 For more information about the ESP8266, see [Getting Started with MicroPython](https://docs.micropython.org/en/latest/esp8266/tutorial/intro.html#deploying-the-firmware).
  
 2. **Erase the MCU**:
-```bash
-esptool.py --chip esp32 --port /dev/ttyUSB0 erase_flash```
+```bash esptool.py --chip esp32 --port /dev/ttyUSB0 erase_flash```
 
 3. **Flash the firmware**: 
-```bash
-esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 esp32-20190720-v1.11-167-g331c224e0.bin```. 
+```bash esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 esp32-20190720-v1.11-167-g331c224e0.bin```. 
 
 Note. The ESP module can operate in two modes: bootloader mode and boot mode. For early ESP modules, you may need to **hold down** the `BOOT` button and then press the `EN` button to enter bootloader mode before flashing the firmware. 
  
