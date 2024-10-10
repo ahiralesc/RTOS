@@ -70,5 +70,86 @@ def establece_conexion():
     print('configuracion de la red :', wlan.ifconfig())
 ```
 
+To explore communication using a circular buffer I built the following class
+
+```Python
+class deque:
+
+    def __init__(self, iterable=None):
+        if iterable is None:
+            self.q = []
+        else:
+            self.q = list(iterable)
+
+    def popleft(self):
+        return self.q.pop(0)
+
+    def popright(self):
+        return self.q.pop()
+
+    def pop(self):
+        return self.q.pop()
+
+    def append(self, a):
+        self.q.append(a)
+
+    def appendleft(self, a):
+        self.q.insert(0, a)
+
+    def extend(self, a):
+        self.q.extend(a)
+
+    def __len__(self):
+        return len(self.q)
+
+    def __bool__(self):
+        return bool(self.q)
+
+    def __iter__(self):
+        yield from self.q
+
+    def __str__(self):
+        return 'deque({})'.format(self.q)
+```
+
+With that done you can do USART communication with STM32 as follows
+
+```Python
+from machine import Timer
+from buffers import queue
+from uart_wrapper import Buffered_UART
+
+# The variable is stores in main memory and is available to the callback
+uart_end_pnt = Buffered_UART(2)
+
+# message lenght is define by n
+n = 10
+
+# FIFO message buffer
+msg_queue = queue()
+
+# This is the body of the callback function
+def instTask(self):
+    if(uart_end_pnt.size() > 0): 
+        # 1. receive the message
+        msg = uart_end_pnt.poll().decode('ascii')
+        # msg = uart_end_pnt.poll().decode("utf-8")
+
+        # 2. remove control characters (No need)
+        msg = msg.replace('\x00','')
+
+        # 3. partition into fixed size strings
+        msgs = [msg[i:i+n] for i in range(0, len(str), n)]
+
+        # 3. push each extracted string in a buffered queue
+        for msg in msgs:
+            msg_queue.append(msg)
+
+# The following is the settup of the timer
+instTaskTimer = Timer(0)
+instTaskTimer.init(period=3000, mode=Timer.ONE_SHOT, callback=instTask)
+```
+
+
 Have fun, yours truly: 
 --Adan Hirales Carbajal
