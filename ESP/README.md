@@ -48,6 +48,27 @@ First lest connect the notebook by doing
 %serialconnect to --port=/dev/ttyUSB0 --baud=115200
 ```
 
+To get an IP from DHCP do
+
+```Python
+# Connectivity module, was modified to attempt indefinite access to the internet
+def establece_conexion():
+    import network, time
+    
+    essid = 'XXXXXXXXX'            # Modify, router name
+    password = 'XXXXXXXXXXXX'      # Modify, access key
+    
+    wlan = network.WLAN(network.STA_IF)
+    
+    if not wlan.isconnected():        # No existe conexion, intenta establecerla
+        print('estableciendo conexion')
+        wlan.active(True)
+        wlan.connect(essid, password)
+        while not wlan.isconnected(): # intenta indefinidamente establecer conexion
+            print(".", end="")
+            time.sleep(1)             # duerme 1s e intenta nuevamente
+    print('configuracion de la red :', wlan.ifconfig())
+```
 
 Have fun, yours truly: 
 --Adan Hirales Carbajal
