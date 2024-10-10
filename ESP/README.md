@@ -7,9 +7,7 @@ For those looking to connect an STM32 with an ESP communication module, this tut
 Before coding, the ESP module must be flashed. Flashing erases any existing data in the main memory. After that, the appropriate firmware must be loaded into memory. In this tutorial, I will use MicroPython as the firmware. Please visit the [MicroPython](https://micropython.org/download/#esp8266) website to download the firmware suitable for your module. For this example, I am preparing the ESP32 module, so I downloaded the firmware file named ```esp32-20190720-v1.11-167-g331c224e0.bin```.
 
 To install the firm ware do:
-1. **Install the esptool**: ```bash pip install esptool```. 
-
-For more information about the ESP8266, see [Getting Started with MicroPython](https://docs.micropython.org/en/latest/esp8266/tutorial/intro.html#deploying-the-firmware).
+1. **Install the esptool**: ```bash pip install esptool```. For more information about the ESP8266, see [Getting Started with MicroPython](https://docs.micropython.org/en/latest/esp8266/tutorial/intro.html#deploying-the-firmware).
  
 2. **Erase the MCU**: ```esptool.py --chip esp32 --port /dev/ttyUSB0 erase_flash```
 
