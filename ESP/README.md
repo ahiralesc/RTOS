@@ -15,7 +15,7 @@ To install the firm ware do:
 
 ```Python
 bash pip install esptool
-```. 
+``` 
 
 For more information about the ESP8266, see [Getting Started with MicroPython](https://docs.micropython.org/en/latest/esp8266/tutorial/intro.html#deploying-the-firmware).
  
