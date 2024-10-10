@@ -7,9 +7,25 @@ For those looking to connect an STM32 with an ESP communication module, this tut
 Before coding, the ESP module must be flashed. Flashing erases any existing data in the main memory. After that, the appropriate firmware must be loaded into memory. In this tutorial, I will use MicroPython as the firmware. Please visit the [MicroPython](https://micropython.org/download/#esp8266) website to download the firmware suitable for your module. For this example, I am preparing the ESP32 module, so I downloaded the firmware file named ```esp32-20190720-v1.11-167-g331c224e0.bin```.
 
 To install the firm ware do:
-1. **Install the esptool**: ```pip install esptool```. For ESP8266 See [Getting started with MicroPython](https://docs.micropython.org/en/latest/esp8266/tutorial/intro.html#deploying-the-firmware). 
-2. **Erase the MCU**:```esptool.py --chip esp32 --port /dev/ttyUSB0 erase_flash```
-3. **Flash the firmware**: ```esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 esp32-20190720-v1.11-167-g331c224e0.bin```. The ESP module may operate in two modes: bootloader mode and boot mode. Early ESP modules sometimes require **holding down** the ```BOOT```, then the ```EN``` buttons in order to flash the firmware.  
+1. **Install the esptool**: 
+```bash
+# pip install esptool```. 
 
+For more information about the ESP8266, see [Getting Started with MicroPython](https://docs.micropython.org/en/latest/esp8266/tutorial/intro.html#deploying-the-firmware).
+ 
+2. **Erase the MCU**:
+```bash
+esptool.py --chip esp32 --port /dev/ttyUSB0 erase_flash```
 
-Author: Yours truly --Adan Hirales Carbajal
+3. **Flash the firmware**: 
+```bash
+esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 esp32-20190720-v1.11-167-g331c224e0.bin```. 
+
+Note. The ESP module can operate in two modes: bootloader mode and boot mode. For early ESP modules, you may need to **hold down** the `BOOT` button and then press the `EN` button to enter bootloader mode before flashing the firmware. 
+ 
+
+Once done. You can connect to the module. There are several ways to do this, via:
+1. [Picocom](https://linux.die.net/man/8/picocom), a minimalistic dumb-
+
+Have fun, yours truly: 
+--Adan Hirales Carbajal
