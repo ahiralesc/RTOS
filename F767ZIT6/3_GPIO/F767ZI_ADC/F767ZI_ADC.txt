@@ -1,0 +1,58 @@
+Configuration	F767ZI_ADC
+STM32CubeMX 	6.1.1
+Date	09/07/2022
+MCU	STM32F767ZITx
+
+
+
+PERIPHERALS	MODES	FUNCTIONS	PINS
+ADC1	IN3	ADC1_IN3	PA3
+SYS	SysTick	SYS_VS_Systick	VP_SYS_VS_Systick
+USART3	Asynchronous	USART3_RX	PD9
+USART3	Asynchronous	USART3_TX	PD8
+
+
+
+Pin Nb	PINs	FUNCTIONs	LABELs
+37	PA3	ADC1_IN3	
+77	PD8	USART3_TX	
+78	PD9	USART3_RX	
+PERIPHERALS	MODES	FUNCTIONS	PINS
+ADC1	IN3	ADC1_IN3	PA3
+SYS	SysTick	SYS_VS_Systick	VP_SYS_VS_Systick
+USART3	Asynchronous	USART3_RX	PD9
+USART3	Asynchronous	USART3_TX	PD8
+
+
+
+Pin Nb	PINs	FUNCTIONs	LABELs
+37	PA3	ADC1_IN3	
+77	PD8	USART3_TX	
+78	PD9	USART3_RX	
+
+
+
+SOFTWARE PROJECT
+
+Project Settings : 
+Project Name : F767ZI_ADC
+Project Folder : E:\Mysrc\EmbeddedSystems\RTOS\F767ZI_ADC
+Toolchain / IDE : STM32CubeIDE
+Firmware Package Name and Version : STM32Cube FW_F7 V1.16.2
+
+
+Code Generation Settings : 
+STM32Cube MCU packages and embedded software packs : Copy only the necessary library files
+Generate peripheral initialization as a pair of '.c/.h' files per peripheral : No
+Backup previously generated files when re-generating : No
+Delete previously generated files when not re-generated : Yes
+Set all free pins as analog (to optimize the power consumption) : No
+
+
+Toolchains Settings : 
+Compiler Optimizations : 
+
+
+
+
+
