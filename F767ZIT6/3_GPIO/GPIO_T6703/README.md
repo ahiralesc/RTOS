@@ -23,11 +23,27 @@ The module warm-up time is of 2m. It updates the signal every 5s. The solution o
 - And allocates the received msg to a global variable. 
 
 This solution uses a **timer (TIM6 in F7)** to create a delay for precise timing. See
-- [specification](https://github.com/ahiralesc/RTOS/blob/main/F767ZIT6/3_GPIO/GPIO_T6703/GPIO_T6703.pdf) for CubeMX settup. 
+- [Specification](https://github.com/ahiralesc/RTOS/blob/main/F767ZIT6/3_GPIO/GPIO_T6703/GPIO_T6703.pdf) for CubeMX settup. 
 - And ```src/main.c``` for solution.
 
 
-![Trace 1](img/trace1.png "Fig 1. Task timing constraints")
-Fig. 1 Illustrates ToggleGreenTask and ToggleRedTask periods are not satisfied. Can you spot where are the errors? 
+**Software solution**
 
+A custom delay is built based on the timing characteristics of timer 6.
 
+```C
+void delay(uint16_t length) {
+	/* TIM6 timer settings in STM32CubeMX are
+	 * - HCLK: 16 MHz.
+	 * - APB1: 16 MHz.
+	 * - TIM6 Pre-scalar: 16-1 thus APB1 is scaled to 1 MHz
+	 * - TIM6 Counter period: 65535-1. Thus, the maximum counter period is 65.535 ms.
+	 *
+	 * The maximum signal length of the DHT11 protocol in all phases (initialization, response,
+	 * and data transmission) is 18 ms. Thus, a timer length of 65.535 ms is more than enough.
+	 * The counter is increasing.
+	 */
+	__HAL_TIM_SET_COUNTER(&htim6, 0);				// Set the time to 0
+	while((__HAL_TIM_GET_COUNTER(&htim6))<length);  // Increment the timer until the desired length.
+}
+```
