@@ -22,8 +22,8 @@ The module warm-up time is of 2m. It updates the signal every 5s. The solution o
 - Validates the msg.
 - And allocates the received msg to a global variable. 
 
-This solution uses **timers** to create keep tasks in execution before yielding control. See
-- [specification](https://github.com/ahiralesc/RTOS/blob/main/F767ZIT6/2_Synchronization/Task_mgmt_PPM_Delay_F7/Task_mgmt_PPM_For_F7.pdf) for CubeMX settup. 
+This solution uses a **timer (TIM6 in F7)** to create a delay for precise timing. See
+- [specification](https://github.com/ahiralesc/RTOS/blob/main/F767ZIT6/3_GPIO/GPIO_T6703/GPIO_T6703.pdf) for CubeMX settup. 
 - And ```src/main.c``` for solution.
 
 
