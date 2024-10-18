@@ -19,4 +19,6 @@ Humans can perceive the toggling (flickering) of an LED in the frequency range o
 
 It is important to note that parsing the control message and validating the frequency rate should not be performed in the interrupt service routine (HAL_UART_RxCpltCallback), as interrupt service routines (ISRs) must execute quickly and predictably. ISRs should be minimal and deterministic to ensure real-time system responsiveness.
 
-The message queue (msgQueueHandle) stores incoming integer values by value. This approach has the advantage of avoiding race conditions between the producer and consumer tasks. However, the drawback is that the tasks are not synchronized, meaning the consumer task does not directly know when a new message has arrived. Since the consumer task runs persistently, this is not an issue—it continuously executes and the read operation on the queue is blocking.
+The message queue (msgQueueHandle) stores incoming integer values by value. This approach helps avoid race conditions between the producer and consumer tasks. However, one drawback is that the tasks are not synchronized, meaning the consumer task doesn't immediately know when a new message has arrived.
+
+Since the consumer task blocks on the read operation and runs persistently (continuously executing), this lack of synchronization doesn't cause functional issues. However, it comes at the cost of increased power consumption.
