@@ -19,13 +19,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-#include "core_json.h"
-#include "stdlib.h"
-#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "core_json.h"
+#include "stdlib.h"
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -53,17 +52,29 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
-/* Definitions for ledConsumer */
-osThreadId_t ledConsumerHandle;
-const osThreadAttr_t ledConsumer_attributes = {
-  .name = "ledConsumer",
+/* Definitions for coordinator */
+osThreadId_t coordinatorHandle;
+const osThreadAttr_t coordinator_attributes = {
+  .name = "coordinator",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for msgQueue */
-osMessageQueueId_t msgQueueHandle;
-const osMessageQueueAttr_t msgQueue_attributes = {
-  .name = "msgQueue"
+/* Definitions for selenoidControl */
+osThreadId_t selenoidControlHandle;
+const osThreadAttr_t selenoidControl_attributes = {
+  .name = "selenoidControl",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for ctrlMsgQueue */
+osMessageQueueId_t ctrlMsgQueueHandle;
+const osMessageQueueAttr_t ctrlMsgQueue_attributes = {
+  .name = "ctrlMsgQueue"
+};
+/* Definitions for selenoidQueue */
+osMessageQueueId_t selenoidQueueHandle;
+const osMessageQueueAttr_t selenoidQueue_attributes = {
+  .name = "selenoidQueue"
 };
 /* USER CODE BEGIN PV */
 
@@ -71,11 +82,11 @@ const osMessageQueueAttr_t msgQueue_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MPU_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 void StartDefaultTask(void *argument);
-void ledConsumerHandler(void *argument);
+void coordinatorHandler(void *argument);
+void selenoidControlerHandler(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -92,12 +103,19 @@ typedef struct{
 } Ctrl_msg;
 
 
-// LED Control message (LED_Crt_msg)
+typedef enum {
+	SELENOID = 0,
+	PUMP,
+	HUMIDITY
+} CRT_Type;
+
+
+// Message format for LED control (LED_Crt_msg)
 typedef struct{
 	uint8_t frequency;
+	uint8_t duration;
 	uint8_t id;
-} LED_Ctrl_msg;
-
+} SELENOID_Ctrl_msg;
 
 
 /* USER CODE END 0 */
@@ -108,12 +126,10 @@ typedef struct{
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
-
-  /* MPU Configuration--------------------------------------------------------*/
-  MPU_Config();
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -155,8 +171,11 @@ int main(void)
   /* USER CODE END RTOS_TIMERS */
 
   /* Create the queue(s) */
-  /* creation of msgQueue */
-  msgQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &msgQueue_attributes);
+  /* creation of ctrlMsgQueue */
+  ctrlMsgQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &ctrlMsgQueue_attributes);
+
+  /* creation of selenoidQueue */
+  selenoidQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &selenoidQueue_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -166,8 +185,11 @@ int main(void)
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-  /* creation of ledConsumer */
-  ledConsumerHandle = osThreadNew(ledConsumerHandler, NULL, &ledConsumer_attributes);
+  /* creation of coordinator */
+  coordinatorHandle = osThreadNew(coordinatorHandler, NULL, &coordinator_attributes);
+
+  /* creation of selenoidControl */
+  selenoidControlHandle = osThreadNew(selenoidControlerHandler, NULL, &selenoidControl_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -181,6 +203,7 @@ int main(void)
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -276,21 +299,25 @@ static void MX_USART3_UART_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_14|GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, IGreen_Pin|IRed_Pin|IBlue_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PB0 PB14 PB7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_14|GPIO_PIN_7;
+  /*Configure GPIO pins : IGreen_Pin IRed_Pin IBlue_Pin */
+  GPIO_InitStruct.Pin = IGreen_Pin|IRed_Pin|IBlue_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -305,7 +332,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		strcpy((char *) msg.buffer, (const char *) buffer);
 
 		// Push the control message to the queue. Do not wait.
-		osMessageQueuePut(msgQueueHandle, &msg, 0U, 0U);
+		osMessageQueuePut(ctrlMsgQueueHandle, &msg, 0U, 0U);
 	}
 }
 /* USER CODE END 4 */
@@ -328,83 +355,116 @@ void StartDefaultTask(void *argument)
   /* USER CODE END 5 */
 }
 
-/* USER CODE BEGIN Header_ledConsumerHandler */
+/* USER CODE BEGIN Header_coordinatorHandler */
 /**
-* @brief Function implementing the ledConsumer thread.
+* @brief Function implementing the coordinator thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_ledConsumerHandler */
-void ledConsumerHandler(void *argument)
+/* USER CODE END Header_coordinatorHandler */
+void coordinatorHandler(void *argument)
 {
-	/* USER CODE BEGIN ledConsumerHandler */
-
-	Ctrl_msg msg;
-	LED_Ctrl_msg command;
-	JSONStatus_t result;
-	osStatus_t status;
-	const char key_1[] = "id";
-	const char key_2[] = "frequency";
-
+  /* USER CODE BEGIN coordinatorHandler */
 	/* Infinite loop */
+	osStatus_t status;
+	JSONStatus_t result;
+	Ctrl_msg msg;
+	char key [] = "type";	// control message type.
+	char * val;
+	size_t key_length = sizeof(key) - 1;
+	size_t val_length;
+	CRT_Type ctrMsg;
+
+
 	for(;;)
 	{
-		status = osMessageQueueGet(msgQueueHandle, &msg, NULL, osWaitForever);
-		// Validate the message was received
-		if (status == osOK) {
-			// Extract the data from the control message
-			command.id = -1;
-			// Validate the JSON format is correct
-			result = JSON_Validate((const char *) msg.buffer, sizeof(msg.buffer));
-			if( result == JSONSuccess ){
-				// Unpack the JSON message
-				size_t bufferLength = sizeof(msg.buffer) - 1;
-				char *val;
-				size_t val_length;
+		status = osMessageGet(ctrlMsgQueueHandle,  &msg, NULL, osWaitForever);
+		if(status == osOK) {
+			size_t msg_length = sizeof(msg.buffer) - 1;
+			result = JSON_Validate(msg.buffer, msg_length);
+			if (result == JSONSuccess){
+				// Evaluate to which controller the message corresponds
+				result = JSON_Search(msg.buffer, msg_length, key, key_length, val, val_length);
+				if (result == JSONSuccess){
+					CRT_Type crt_type = atoi(val);
 
-				// This parsing phase is format specific.
-				JSON_Search((char *)msg.buffer, bufferLength, key_1, sizeof(key_1)-1, &val, &val_length);
-				command.id = (uint8_t) atoi(val);
-				JSON_Search((char *)msg.buffer, bufferLength, key_2, sizeof(key_2)-1, &val, &val_length);
-				command.frequency = (uint8_t) atoi(val);
-			}
-
-			// Now process the LED control message.
-			if(command.id != -1){
-
+					// Forward the message to the appropriate controller.
+					switch(crt_type)
+					{
+						case SELENOID:
+							osMessageQueuePut(selenoidQueueHandle, &msg, 0U, 0U);
+							break;
+						case PUMP:
+							break;
+						case HUMIDITY:
+							break;
+						default: // An unrecognized control message.
+					}
+				}
 			}
 		}
 	}
-  /* USER CODE END ledConsumerHandler */
+  /* USER CODE END coordinatorHandler */
 }
 
-/* MPU Configuration */
-
-void MPU_Config(void)
+/* USER CODE BEGIN Header_selenoidControlerHandler */
+/**
+* @brief Function implementing the selenoidControl thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_selenoidControlerHandler */
+void selenoidControlerHandler(void *argument)
 {
-  MPU_Region_InitTypeDef MPU_InitStruct = {0};
+	/* USER CODE BEGIN selenoidControlerHandler */
+	/* Infinite loop */
+	osStatus_t status;
+	char key1 [] = "id";
+	char key2 [] = "duration";
+	char key3 [] = "frequency";
+	char * val;
+	size_t val_length;
+	SELENOID_Ctrl_msg selenoid;
 
-  /* Disables the MPU */
-  HAL_MPU_Disable();
+	for(;;)
+	{
+		status = osMessageGet(ctrlMsgQueueHandle,  &msg, NULL, osWaitForever);
 
-  /** Initializes and configures the Region and the memory to be protected
+		// Control message preparation
+		if(status == osOK) {
+			size_t msg_length = sizeof(msg.buffer) - 1;
+			JSON_Search(msg.buffer, msg_length, key1, sizeof(key1)-1, val, val_length);
+			selenoid.id = val;
+			JSON_Search(msg.buffer, msg_length, key2, sizeof(key2)-1, val, val_length);
+			selenoid.duration = val;
+			JSON_Search(msg.buffer, msg_length, key3, sizeof(key3)-1, val, val_length);
+			selenoid.frequency = val;
+		}
+
+		// Execution
+	}
+  /* USER CODE END selenoidControlerHandler */
+}
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM1 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
   */
-  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
-  MPU_InitStruct.BaseAddress = 0x0;
-  MPU_InitStruct.Size = MPU_REGION_SIZE_4GB;
-  MPU_InitStruct.SubRegionDisable = 0x87;
-  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
-  MPU_InitStruct.AccessPermission = MPU_REGION_NO_ACCESS;
-  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
-  MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
-  MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
-  MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
 
-  HAL_MPU_ConfigRegion(&MPU_InitStruct);
-  /* Enables the MPU */
-  HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM1) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
 
+  /* USER CODE END Callback 1 */
 }
 
 /**

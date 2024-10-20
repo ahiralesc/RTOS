@@ -63,6 +63,7 @@ void Error_Handler(void);
 #define IRed_GPIO_Port GPIOB
 #define IBlue_Pin GPIO_PIN_7
 #define IBlue_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
