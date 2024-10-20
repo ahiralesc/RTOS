@@ -19,6 +19,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "core_json.h"
+#include "stdlib.h"
+#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -80,6 +83,22 @@ void ledConsumerHandler(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint8_t buffer[6];
+
+// General control message
+typedef struct{
+	uint8_t buffer[6];
+	uint8_t id;
+} Ctrl_msg;
+
+
+// LED Control message (LED_Crt_msg)
+typedef struct{
+	uint8_t frequency;
+	uint8_t id;
+} LED_Ctrl_msg;
+
+
 
 /* USER CODE END 0 */
 
@@ -132,6 +151,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
+  HAL_UART_Receive_IT(&huart3, buffer, sizeof(buffer));
   /* USER CODE END RTOS_TIMERS */
 
   /* Create the queue(s) */
@@ -274,7 +294,20 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	Ctrl_msg msg;
+	if(huart->Instance == USART3){
+		// Receive the USART message.
+		HAL_UART_Receive_IT(&huart3, buffer, sizeof(buffer));
 
+		// Copy by value the contents of buffer to the control message.
+		strcpy((char *) msg.buffer, (const char *) buffer);
+
+		// Push the control message to the queue. Do not wait.
+		osMessageQueuePut(msgQueueHandle, &msg, 0U, 0U);
+	}
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -304,12 +337,44 @@ void StartDefaultTask(void *argument)
 /* USER CODE END Header_ledConsumerHandler */
 void ledConsumerHandler(void *argument)
 {
-  /* USER CODE BEGIN ledConsumerHandler */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+	/* USER CODE BEGIN ledConsumerHandler */
+
+	Ctrl_msg msg;
+	LED_Ctrl_msg command;
+	JSONStatus_t result;
+	osStatus_t status;
+	const char key_1[] = "id";
+	const char key_2[] = "frequency";
+
+	/* Infinite loop */
+	for(;;)
+	{
+		status = osMessageQueueGet(msgQueueHandle, &msg, NULL, osWaitForever);
+		// Validate the message was received
+		if (status == osOK) {
+			// Extract the data from the control message
+			command.id = -1;
+			// Validate the JSON format is correct
+			result = JSON_Validate((const char *) msg.buffer, sizeof(msg.buffer));
+			if( result == JSONSuccess ){
+				// Unpack the JSON message
+				size_t bufferLength = sizeof(msg.buffer) - 1;
+				char *val;
+				size_t val_length;
+
+				// This parsing phase is format specific.
+				JSON_Search((char *)msg.buffer, bufferLength, key_1, sizeof(key_1)-1, &val, &val_length);
+				command.id = (uint8_t) atoi(val);
+				JSON_Search((char *)msg.buffer, bufferLength, key_2, sizeof(key_2)-1, &val, &val_length);
+				command.frequency = (uint8_t) atoi(val);
+			}
+
+			// Now process the LED control message.
+			if(command.id != -1){
+
+			}
+		}
+	}
   /* USER CODE END ledConsumerHandler */
 }
 
