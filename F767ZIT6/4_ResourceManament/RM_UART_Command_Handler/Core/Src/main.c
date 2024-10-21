@@ -322,7 +322,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
+{  // {cmd: "selenoide", parametros : { "frecuencia" : 10, duracion, "10m"}0000000000"
 	Ctrl_msg msg;
 	if(huart->Instance == USART3){
 		// Receive the USART message.
@@ -369,7 +369,7 @@ void coordinatorHandler(void *argument)
 	osStatus_t status;
 	JSONStatus_t result;
 	Ctrl_msg msg;
-	char key [] = "type";	// control message type.
+	char key [] = "cmd";	// command type.
 	char * val;
 	size_t key_length = sizeof(key) - 1;
 	size_t val_length;
@@ -386,10 +386,10 @@ void coordinatorHandler(void *argument)
 				// Evaluate to which controller the message corresponds
 				result = JSON_Search(msg.buffer, msg_length, key, key_length, val, val_length);
 				if (result == JSONSuccess){
-					CRT_Type crt_type = atoi(val);
+					CRT_Type cmd = atoi(val);
 
 					// Forward the message to the appropriate controller.
-					switch(crt_type)
+					switch(cmd)
 					{
 						case SELENOID:
 							osMessageQueuePut(selenoidQueueHandle, &msg, 0U, 0U);
@@ -428,7 +428,7 @@ void selenoidControlerHandler(void *argument)
 
 	for(;;)
 	{
-		status = osMessageGet(ctrlMsgQueueHandle,  &msg, NULL, osWaitForever);
+		status = osMessageGet(selenoidQueueHandle,  &msg, NULL, 0);
 
 		// Control message preparation
 		if(status == osOK) {

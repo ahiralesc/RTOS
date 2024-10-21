@@ -1,23 +1,34 @@
 ### UART Command Handler
 
-This example demonstrates how to manage serial input commands via UART, illustrating how to separate UART communication from processing logic to make the system more modular. 
+#### Introduction
 
-Tasks:
-- Producer Task: This task reads incoming data from the UART (USART/Serial) and enqueues it into a queue. It is implemented in the HAL_UART_RxCpltCallback function, which handles the interrupt triggered by UART-PC communication.
-- Consumer Task: This task reads data from the queue and processes it. In this example, the consumer task is ledConsumerHandler, which enables or disables LEDs based on the message type.
+The solution is based on the **mediator pattern**. The mediator (coordinator) manages communication between various components (e.g., the producer and consumer) to reduce direct dependencies. It ensures that the producer and consumer do not interact with each other directly. This approach demonstrates how to manage serial input commands via UART, effectively separating UART communication from processing logic, thereby making the system more modular and promoting loose coupling.
 
-Asynchronous communication occurs both between the computer and the MCU, as well as between the producer and consumer tasks. The control message sent from the PC has the following format:
+The responsibilities of the components are as follows:
+- **Producer task** (HAL_UART_RxCpltCallback): Reads incoming control messages from UART and enqueues them into a control message queue. Control messages are fixed-length, JSON-formatted strings. These messages are sent to the producer task via serial communication from the computer but can also be received through wireless communication. Since the producer task is an Interrup Service Routine (ISR) it must be quick and predictable to ensure real-time system responsiveness. 
+- **Coordinator task** (coordinatorHandler): Dequeues control messages from the control message queue, validates their format, and forwards them to the appropriate consumer queue.
+- **Consumer task** (solenoidControllerHandler): Dequeues control messages from its queue (solenoidQueueHandle), extracts and processes the message. The solution can support multiple consumer tasks, though only one consumer task is illustrated in this example. 
 
-```C
-typedef struct{
-	uint8_t id;         // The led id: 1 is red, 2 blue, and 3 green.
-	uint8_t frequency;  // The frequency rate.
-} LED_Ctrl_msg;
+#### Use case
+
+The application of this pattern is demonstrated through the construction of an irrigation system. Only one use case is discussed: As a user, I want to specify the location, frequency, and duration of irrigation to control the soil moisture for each plant in a selected area. An LED emulates a solenoid that serves as a control valve for water flow. Three LEDs are used to represent three locations in the garden. The control message follows this format:
+
+```Python
+{
+	"id" :        XX, # The LED (solenoid) ID (two-digit integer).
+	"frequency" : XX, # The irrigation frequency (two-digit integer).
+	"duration"  : XX  # The irrigation duration in minutes (two-digit integer).
+}
 ```
 
-Humans can perceive the toggling (flickering) of an LED in the frequency range of approximately 30 to 60 Hz. Beyond 60 Hz, the flickering typically appears as continuous, stable light to the human eye.
+An example control message is {"id":01, "frequency":30, "duration":01}. The UART requires a buffer size of 39 bytes: 37 bytes for the JSON string, plus 1 byte for the "\x0" character, which is typically used to terminate the string. Since LEDs are used instead of solenoids, the toggling (flickering) frequency must range between 30 and 60 Hz. Beyond 60 Hz, the flickering typically appears as continuous, stable light to the human eye. In a drip irrigation system, water is supplied at much lower rates, usually measured in drops per second or liters per hour.
 
-It is important to note that parsing the control message and validating the frequency rate should not be performed in the interrupt service routine (HAL_UART_RxCpltCallback), as interrupt service routines (ISRs) must execute quickly and predictably. ISRs should be minimal and deterministic to ensure real-time system responsiveness.
+## Processing workflow
+
+![Trace 1](img/monitor.png "Fig 1. Monitor workflow")
+Fig. 1 A collaborative diagram of the monitor pattern. 
+
+
 
 The message queue (msgQueueHandle) stores incoming integer values by value. This approach helps avoid race conditions between the producer and consumer tasks. However, one drawback is that the tasks are not synchronized, meaning the consumer task doesn't immediately know when a new message has arrived.
 
