@@ -23,9 +23,9 @@ The application of this pattern is demonstrated through the construction of an i
 
 An example control message is {"id":01, "frequency":30, "duration":01}. The UART requires a buffer size of 39 bytes: 37 bytes for the JSON string, plus 1 byte for the "\x0" character, which is typically used to terminate the string. Since LEDs are used instead of solenoids, the toggling (flickering) frequency must range between 30 and 60 Hz. Beyond 60 Hz, the flickering typically appears as continuous, stable light to the human eye. In a drip irrigation system, water is supplied at much lower rates, usually measured in drops per second or liters per hour.
 
-## Processing workflow
+### Processing workflow
 
-![Trace 1](img/monitor.png "Fig 1. Monitor workflow")
+![Trace 1](img/Monitor.png "Fig 1. Monitor workflow")
 Fig. 1 A collaborative diagram of the monitor pattern. 
 
 
