@@ -25,10 +25,10 @@ An example control message is {"id":01, "frequency":30, "duration":01}. The UART
 
 ### Processing workflow
 
-![Trace 1](Img/Monitor.png "Fig 1. Monitor workflow")
-Fig. 1 A collaborative diagram of the monitor pattern. 
+![Trace 1](Img/Monitor.png "Fig 1. Monitor workflow")<br>
+<center>Fig. 1 A collaborative diagram of the monitor pattern.</center> 
 
-
+### 
 
 The message queue (msgQueueHandle) stores incoming integer values by value. This approach helps avoid race conditions between the producer and consumer tasks. However, one drawback is that the tasks are not synchronized, meaning the consumer task doesn't immediately know when a new message has arrived.
 
