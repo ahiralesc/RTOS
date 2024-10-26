@@ -71,10 +71,10 @@ osMessageQueueId_t ctrlMsgQueueHandle;
 const osMessageQueueAttr_t ctrlMsgQueue_attributes = {
   .name = "ctrlMsgQueue"
 };
-/* Definitions for selenoidQueue */
-osMessageQueueId_t selenoidQueueHandle;
-const osMessageQueueAttr_t selenoidQueue_attributes = {
-  .name = "selenoidQueue"
+/* Definitions for selenoidMsgQueue */
+osMessageQueueId_t selenoidMsgQueueHandle;
+const osMessageQueueAttr_t selenoidMsgQueue_attributes = {
+  .name = "selenoidMsgQueue"
 };
 /* USER CODE BEGIN PV */
 
@@ -86,7 +86,7 @@ static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 void StartDefaultTask(void *argument);
 void coordinatorHandler(void *argument);
-void selenoidControlerHandler(void *argument);
+void selenoidControllerHandler(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -174,8 +174,8 @@ int main(void)
   /* creation of ctrlMsgQueue */
   ctrlMsgQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &ctrlMsgQueue_attributes);
 
-  /* creation of selenoidQueue */
-  selenoidQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &selenoidQueue_attributes);
+  /* creation of selenoidMsgQueue */
+  selenoidMsgQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &selenoidMsgQueue_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -189,7 +189,7 @@ int main(void)
   coordinatorHandle = osThreadNew(coordinatorHandler, NULL, &coordinator_attributes);
 
   /* creation of selenoidControl */
-  selenoidControlHandle = osThreadNew(selenoidControlerHandler, NULL, &selenoidControl_attributes);
+  selenoidControlHandle = osThreadNew(selenoidControllerHandler, NULL, &selenoidControl_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -322,8 +322,9 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{  // {cmd: "selenoide", parametros : { "frecuencia" : 10, duracion, "10m"}0000000000"
+{   // The control message
 	Ctrl_msg msg;
+
 	if(huart->Instance == USART3){
 		// Receive the USART message.
 		HAL_UART_Receive_IT(&huart3, buffer, sizeof(buffer));
@@ -366,25 +367,29 @@ void coordinatorHandler(void *argument)
 {
   /* USER CODE BEGIN coordinatorHandler */
 	/* Infinite loop */
-	osStatus_t status;
-	JSONStatus_t result;
+	// Msg queue variables
 	Ctrl_msg msg;
-	char key [] = "cmd";	// command type.
-	char * val;
+
+	// JSON variables
+	JSONStatus_t result;
+	const char key [] = "cmd";	// command type.
 	size_t key_length = sizeof(key) - 1;
+
+	// Extracted values from JSON
+	char * val;
 	size_t val_length;
-	CRT_Type ctrMsg;
 
 
 	for(;;)
 	{
-		status = osMessageGet(ctrlMsgQueueHandle,  &msg, NULL, osWaitForever);
+		osStatus_t status = osMessageQueueGet(ctrlMsgQueueHandle,  &msg, NULL, osWaitForever);
+
 		if(status == osOK) {
 			size_t msg_length = sizeof(msg.buffer) - 1;
-			result = JSON_Validate(msg.buffer, msg_length);
+			result = JSON_Validate( (const char *) msg.buffer, msg_length );
 			if (result == JSONSuccess){
 				// Evaluate to which controller the message corresponds
-				result = JSON_Search(msg.buffer, msg_length, key, key_length, val, val_length);
+				result = JSON_Search( (char *) msg.buffer, msg_length, key, key_length, &val, &val_length);
 				if (result == JSONSuccess){
 					CRT_Type cmd = atoi(val);
 
@@ -392,7 +397,7 @@ void coordinatorHandler(void *argument)
 					switch(cmd)
 					{
 						case SELENOID:
-							osMessageQueuePut(selenoidQueueHandle, &msg, 0U, 0U);
+							osMessageQueuePut(selenoidMsgQueueHandle, &msg, 0U, 0U);
 							break;
 						case PUMP:
 							break;
@@ -407,43 +412,40 @@ void coordinatorHandler(void *argument)
   /* USER CODE END coordinatorHandler */
 }
 
-/* USER CODE BEGIN Header_selenoidControlerHandler */
+/* USER CODE BEGIN Header_selenoidControllerHandler */
 /**
 * @brief Function implementing the selenoidControl thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_selenoidControlerHandler */
-void selenoidControlerHandler(void *argument)
+/* USER CODE END Header_selenoidControllerHandler */
+void selenoidControllerHandler(void *argument)
 {
-	/* USER CODE BEGIN selenoidControlerHandler */
-	/* Infinite loop */
-	osStatus_t status;
+  /* USER CODE BEGIN selenoidControllerHandler */
 	char key1 [] = "id";
 	char key2 [] = "duration";
 	char key3 [] = "frequency";
 	char * val;
 	size_t val_length;
 	SELENOID_Ctrl_msg selenoid;
-
+	Ctrl_msg msg;
+  /* Infinite loop */
 	for(;;)
 	{
-		status = osMessageGet(selenoidQueueHandle,  &msg, NULL, 0);
+		osStatus_t status = osMessageQueueGet(selenoidMsgQueueHandle,  &msg, NULL, 0);
 
 		// Control message preparation
 		if(status == osOK) {
 			size_t msg_length = sizeof(msg.buffer) - 1;
-			JSON_Search(msg.buffer, msg_length, key1, sizeof(key1)-1, val, val_length);
-			selenoid.id = val;
-			JSON_Search(msg.buffer, msg_length, key2, sizeof(key2)-1, val, val_length);
-			selenoid.duration = val;
-			JSON_Search(msg.buffer, msg_length, key3, sizeof(key3)-1, val, val_length);
-			selenoid.frequency = val;
-		}
-
-		// Execution
-	}
-  /* USER CODE END selenoidControlerHandler */
+	  		JSON_Search( (char *) msg.buffer, msg_length, key1, sizeof(key1)-1, &val, &val_length);
+	  		selenoid.id = atoi(val);
+	  		JSON_Search( (char *) msg.buffer, msg_length, key2, sizeof(key2)-1, &val, &val_length);
+	  		selenoid.duration = atoi(val);
+	  		JSON_Search( (char *) msg.buffer, msg_length, key3, sizeof(key3)-1, &val, &val_length);
+	  		selenoid.frequency = atoi(val);
+	  	}
+  }
+  /* USER CODE END selenoidControllerHandler */
 }
 
 /**

@@ -28,8 +28,12 @@ An example control message is {"id":01, "frequency":30, "duration":01}. The UART
 ![Trace 1](Img/Monitor.png "Fig 1. Monitor workflow")<br>
 <center>Fig. 1 A collaborative diagram of the monitor pattern.</center> 
 
-### 
+### Comments
 
 The message queue (msgQueueHandle) stores incoming integer values by value. This approach helps avoid race conditions between the producer and consumer tasks. However, one drawback is that the tasks are not synchronized, meaning the consumer task doesn't immediately know when a new message has arrived.
 
 Since the consumer task blocks on the read operation and runs persistently (continuously executing), this lack of synchronization doesn't cause functional issues. However, it comes at the cost of increased power consumption.
+
+### Resources
+
+- FreeRTOS [CoreJSON](https://github.com/FreeRTOS/coreJSON/tree/b92c8cd9cdba790e46eab05f7a620b0f15c5be69) repository.
