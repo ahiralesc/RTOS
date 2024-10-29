@@ -1,6 +1,6 @@
-### UART Command Handler
+## UART Command Handler
 
-#### Introduction
+### Introduction
 
 The solution is based on the **mediator pattern**. The mediator (coordinator) manages communication between various components (e.g., the producer and consumer) to reduce direct dependencies. It ensures that the producer and consumer do not interact with each other directly. This approach demonstrates how to manage serial input commands via UART, effectively separating UART communication from processing logic, thereby making the system more modular and promoting loose coupling.
 
@@ -9,7 +9,7 @@ The responsibilities of the components are as follows:
 - **Coordinator task** (coordinatorHandler): Dequeues control messages from the control message queue, validates their format, and forwards them to the appropriate consumer queue.
 - **Consumer task** (solenoidControllerHandler): Dequeues control messages from its queue (solenoidQueueHandle), extracts and processes the message. The solution can support multiple consumer tasks, though only one consumer task is illustrated in this example. 
 
-#### Use case
+### Use case
 
 The application of this pattern is demonstrated through the construction of an irrigation system. Only one use case is discussed: As a user, I want to specify the location, frequency, and duration of irrigation to control the soil moisture for each plant in a selected area. An LED emulates a solenoid that serves as a control valve for water flow. Three LEDs are used to represent three locations in the garden. The control message follows this format:
 
@@ -34,6 +34,6 @@ The message queue (msgQueueHandle) stores incoming integer values by value. This
 
 Since the consumer task blocks on the read operation and runs persistently (continuously executing), this lack of synchronization doesn't cause functional issues. However, it comes at the cost of increased power consumption.
 
-### Resources
+### Additional resources
 
 - FreeRTOS [CoreJSON](https://github.com/FreeRTOS/coreJSON/tree/b92c8cd9cdba790e46eab05f7a620b0f15c5be69) repository.

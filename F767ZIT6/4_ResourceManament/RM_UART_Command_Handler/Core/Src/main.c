@@ -94,11 +94,19 @@ void selenoidControllerHandler(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t buffer[6];
+
+/*
+ *  The test message is assumed constant. i.e. {"id":01,"frequency":30,"duration":01}
+ *  The length of the message is 38 + 1 for \n.
+ */
+#define BUFFER_SZ 38
+
+uint8_t buffer[BUFFER_SZ];
+
 
 // General control message
 typedef struct{
-	uint8_t buffer[6];
+	uint8_t buffer[BUFFER_SZ];
 	uint8_t id;
 } Ctrl_msg;
 
@@ -167,15 +175,16 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
-  HAL_UART_Receive_IT(&huart3, buffer, sizeof(buffer));
+  HAL_UART_Receive_IT(&huart3, buffer, BUFFER_SZ);
+
   /* USER CODE END RTOS_TIMERS */
 
   /* Create the queue(s) */
   /* creation of ctrlMsgQueue */
-  ctrlMsgQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &ctrlMsgQueue_attributes);
+  ctrlMsgQueueHandle = osMessageQueueNew (16, sizeof(Ctrl_msg), &ctrlMsgQueue_attributes);
 
   /* creation of selenoidMsgQueue */
-  selenoidMsgQueueHandle = osMessageQueueNew (16, sizeof(uint16_t), &selenoidMsgQueue_attributes);
+  selenoidMsgQueueHandle = osMessageQueueNew (16, sizeof(Ctrl_msg), &selenoidMsgQueue_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -333,7 +342,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		strcpy((char *) msg.buffer, (const char *) buffer);
 
 		// Push the control message to the queue. Do not wait.
-		osMessageQueuePut(ctrlMsgQueueHandle, &msg, 0U, 0U);
+		// May be called from Interrupt Service Routines if the parameter timeout is set to 0.
+		osMessageQueuePut(ctrlMsgQueueHandle, &msg, 0, 0);
 	}
 }
 /* USER CODE END 4 */
@@ -369,6 +379,7 @@ void coordinatorHandler(void *argument)
 	/* Infinite loop */
 	// Msg queue variables
 	Ctrl_msg msg;
+	osStatus_t status;
 
 	// JSON variables
 	JSONStatus_t result;
@@ -382,7 +393,7 @@ void coordinatorHandler(void *argument)
 
 	for(;;)
 	{
-		osStatus_t status = osMessageQueueGet(ctrlMsgQueueHandle,  &msg, NULL, osWaitForever);
+		status = osMessageQueueGet(ctrlMsgQueueHandle,  &msg, NULL, osWaitForever);
 
 		if(status == osOK) {
 			size_t msg_length = sizeof(msg.buffer) - 1;
