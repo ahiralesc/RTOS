@@ -335,15 +335,19 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	Ctrl_msg msg;
 
 	if(huart->Instance == USART3){
+
 		// Receive the USART message.
 		HAL_UART_Receive_IT(&huart3, buffer, sizeof(buffer));
 
 		// Copy by value the contents of buffer to the control message.
-		strcpy((char *) msg.buffer, (const char *) buffer);
+		//strcpy((char *) msg.buffer, (const char *) buffer);
+		memcpy(msg.buffer, buffer, BUFFER_SZ);
+		msg.id = 0;
 
 		// Push the control message to the queue. Do not wait.
 		// May be called from Interrupt Service Routines if the parameter timeout is set to 0.
-		osMessageQueuePut(ctrlMsgQueueHandle, &msg, 0, 0);
+		//osMessageQueuePut(ctrlMsgQueueHandle, &msg, 0, 0);
+		xQueueSendToFrontFromISR(ctrlMsgQueueHandle, &msg, 0);
 	}
 }
 /* USER CODE END 4 */
