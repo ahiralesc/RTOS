@@ -181,7 +181,7 @@ int main(void)
 
   /* Create the queue(s) */
   /* creation of selenoidMsgQueue */
-  selenoidMsgQueueHandle = osMessageQueueNew (16, sizeof(Ctrl_msg), &selenoidMsgQueue_attributes);
+  selenoidMsgQueueHandle = osMessageQueueNew (16, sizeof(SELENOID_Ctrl_msg), &selenoidMsgQueue_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -404,6 +404,7 @@ void coordinatorHandler(void *argument)
 								selenoid.duration = atoi(val);
 							if (JSON_Search( (char *) ctrBuffer, msg_length, "frequency", 9, &val, &val_length) == JSONSuccess)
 								selenoid.frequency = atoi(val);
+							// It should pass the contents by copy
 							osMessageQueuePut(selenoidMsgQueueHandle, &selenoid, 0U, 0U);
 							break;
 						case PUMP:
@@ -435,15 +436,30 @@ void coordinatorHandler(void *argument)
 void selenoidControllerHandler(void *argument)
 {
   /* USER CODE BEGIN selenoidControllerHandler */
-	SELENOID_Ctrl_msg selenoid;
-	Ctrl_msg msg;
-  /* Infinite loop */
+	SELENOID_Ctrl_msg slndCrtMsg, selenoid;
+	TickType_t interval = 0;
+	TickType_t last = 0;
+
+	// Default values
+	selenoid.id = 255;
+	selenoid.duration = 0;
+	selenoid.frequency = 0;
 	for(;;)
 	{
-		osStatus_t status = osMessageQueueGet(selenoidMsgQueueHandle,  &selenoid, NULL, 0);
-		// Perform the work in the selenoid that corresponds.
-
-  }
+		 osStatus_t status = osMessageQueueGet(selenoidMsgQueueHandle, &slndCrtMsg, NULL, 0);
+		if ( status == osOK) {
+			selenoid.id	= slndCrtMsg.id;
+			selenoid.duration = pdMS_TO_TICKS(slndCrtMsg.duration);
+			selenoid.frequency = slndCrtMsg.frequency;
+		} else if (selenoid.id != 255) {
+			last = xTaskGetTickCount();
+			do {
+				HAL_GPIO_TogglePin(IBlue_GPIO_Port, IBlue_Pin);
+				osDelay(selenoid.frequency); // Emulate 20 Hz
+				interval = xTaskGetTickCount() - last;
+			}while(interval < selenoid.duration);
+		}
+	}
   /* USER CODE END selenoidControllerHandler */
 }
 
