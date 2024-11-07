@@ -57,7 +57,7 @@ osThreadId_t coordinatorHandle;
 const osThreadAttr_t coordinator_attributes = {
   .name = "coordinator",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for selenoidControl */
 osThreadId_t selenoidControlHandle;
@@ -66,15 +66,15 @@ const osThreadAttr_t selenoidControl_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for ctrlMsgQueue */
-osMessageQueueId_t ctrlMsgQueueHandle;
-const osMessageQueueAttr_t ctrlMsgQueue_attributes = {
-  .name = "ctrlMsgQueue"
-};
 /* Definitions for selenoidMsgQueue */
 osMessageQueueId_t selenoidMsgQueueHandle;
 const osMessageQueueAttr_t selenoidMsgQueue_attributes = {
   .name = "selenoidMsgQueue"
+};
+/* Definitions for deferredCoordinatorBS */
+osSemaphoreId_t deferredCoordinatorBSHandle;
+const osSemaphoreAttr_t deferredCoordinatorBS_attributes = {
+  .name = "deferredCoordinatorBS"
 };
 /* USER CODE BEGIN PV */
 
@@ -96,33 +96,29 @@ void selenoidControllerHandler(void *argument);
 /* USER CODE BEGIN 0 */
 
 /*
- *  The test message is assumed constant. i.e. {"id":01,"frequency":30,"duration":01}
- *  The length of the message is 38 + 1 for \n.
+ *  The test message is assumed constant. i.e. {"cmd":"00","id":"01","frequency":"30","duration":"01"}
+ *  The length of the message is 44 + 1 for \n.
  */
-#define BUFFER_SZ 38
+#define BUFFER_SZ 55
+typedef char * Ctrl_msg;
 
+
+// UART buffer
 uint8_t buffer[BUFFER_SZ];
-
-
-// General control message
-typedef struct{
-	uint8_t buffer[BUFFER_SZ];
-	uint8_t id;
-} Ctrl_msg;
-
+uint8_t ctrBuffer[BUFFER_SZ];
 
 typedef enum {
-	SELENOID = 0,
+	SELENOID = 0, // SELENOID
 	PUMP,
-	HUMIDITY
+	HUMIDITY      // HUMIDITY
 } CRT_Type;
 
 
 // Message format for LED control (LED_Crt_msg)
 typedef struct{
+	uint8_t id;
 	uint8_t frequency;
 	uint8_t duration;
-	uint8_t id;
 } SELENOID_Ctrl_msg;
 
 
@@ -169,6 +165,10 @@ int main(void)
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
+  /* Create the semaphores(s) */
+  /* creation of deferredCoordinatorBS */
+  deferredCoordinatorBSHandle = osSemaphoreNew(1, 0, &deferredCoordinatorBS_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -180,9 +180,6 @@ int main(void)
   /* USER CODE END RTOS_TIMERS */
 
   /* Create the queue(s) */
-  /* creation of ctrlMsgQueue */
-  ctrlMsgQueueHandle = osMessageQueueNew (16, sizeof(Ctrl_msg), &ctrlMsgQueue_attributes);
-
   /* creation of selenoidMsgQueue */
   selenoidMsgQueueHandle = osMessageQueueNew (16, sizeof(Ctrl_msg), &selenoidMsgQueue_attributes);
 
@@ -331,23 +328,17 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{   // The control message
-	Ctrl_msg msg;
-
-	if(huart->Instance == USART3){
-
+{
+	if(huart->Instance == USART3)
+	{
 		// Receive the USART message.
 		HAL_UART_Receive_IT(&huart3, buffer, sizeof(buffer));
 
-		// Copy by value the contents of buffer to the control message.
-		//strcpy((char *) msg.buffer, (const char *) buffer);
-		memcpy(msg.buffer, buffer, BUFFER_SZ);
-		msg.id = 0;
+		// Copy and signal to deferred processing to the coordinatorHandle
+		memcpy(ctrBuffer, buffer, BUFFER_SZ);
+		ctrBuffer[BUFFER_SZ] = '\0';
 
-		// Push the control message to the queue. Do not wait.
-		// May be called from Interrupt Service Routines if the parameter timeout is set to 0.
-		//osMessageQueuePut(ctrlMsgQueueHandle, &msg, 0, 0);
-		xQueueSendToFrontFromISR(ctrlMsgQueueHandle, &msg, 0);
+		osSemaphoreRelease(deferredCoordinatorBSHandle);
 	}
 }
 /* USER CODE END 4 */
@@ -381,12 +372,9 @@ void coordinatorHandler(void *argument)
 {
   /* USER CODE BEGIN coordinatorHandler */
 	/* Infinite loop */
-	// Msg queue variables
-	Ctrl_msg msg;
-	osStatus_t status;
+	//osStatus_t status;
 
 	// JSON variables
-	JSONStatus_t result;
 	const char key [] = "cmd";	// command type.
 	size_t key_length = sizeof(key) - 1;
 
@@ -397,31 +385,41 @@ void coordinatorHandler(void *argument)
 
 	for(;;)
 	{
-		status = osMessageQueueGet(ctrlMsgQueueHandle,  &msg, NULL, osWaitForever);
-
-		if(status == osOK) {
-			size_t msg_length = sizeof(msg.buffer) - 1;
-			result = JSON_Validate( (const char *) msg.buffer, msg_length );
-			if (result == JSONSuccess){
+		if (osSemaphoreAcquire(deferredCoordinatorBSHandle, osWaitForever) == osOK){
+			size_t msg_length = sizeof(ctrBuffer);
+			if (JSON_Validate( (const char *) ctrBuffer, msg_length ) == JSONSuccess){
 				// Evaluate to which controller the message corresponds
-				result = JSON_Search( (char *) msg.buffer, msg_length, key, key_length, &val, &val_length);
-				if (result == JSONSuccess){
+				if (JSON_Search( (char *) ctrBuffer, msg_length, key, key_length, &val, &val_length) == JSONSuccess){
 					CRT_Type cmd = atoi(val);
 
 					// Forward the message to the appropriate controller.
 					switch(cmd)
 					{
 						case SELENOID:
-							osMessageQueuePut(selenoidMsgQueueHandle, &msg, 0U, 0U);
+							// Parse the selenoid control message
+							SELENOID_Ctrl_msg selenoid;
+							if (JSON_Search( (char *) ctrBuffer, msg_length, "id", 2, &val, &val_length) == JSONSuccess)
+								selenoid.id = atoi(val);
+							if (JSON_Search( (char *) ctrBuffer, msg_length, "duration", 8, &val, &val_length) == JSONSuccess)
+								selenoid.duration = atoi(val);
+							if (JSON_Search( (char *) ctrBuffer, msg_length, "frequency", 9, &val, &val_length) == JSONSuccess)
+								selenoid.frequency = atoi(val);
+							osMessageQueuePut(selenoidMsgQueueHandle, &selenoid, 0U, 0U);
 							break;
 						case PUMP:
+							// Parse the pump control message
 							break;
 						case HUMIDITY:
+							// Parse the humidity sensor control message
 							break;
-						default: // An unrecognized control message.
+							// Unrecognized control message
+						default:
 					}
 				}
 			}
+
+			// Reset the control buffer
+			memset(ctrBuffer, 0, BUFFER_SZ);
 		}
 	}
   /* USER CODE END coordinatorHandler */
@@ -437,28 +435,14 @@ void coordinatorHandler(void *argument)
 void selenoidControllerHandler(void *argument)
 {
   /* USER CODE BEGIN selenoidControllerHandler */
-	char key1 [] = "id";
-	char key2 [] = "duration";
-	char key3 [] = "frequency";
-	char * val;
-	size_t val_length;
 	SELENOID_Ctrl_msg selenoid;
 	Ctrl_msg msg;
   /* Infinite loop */
 	for(;;)
 	{
-		osStatus_t status = osMessageQueueGet(selenoidMsgQueueHandle,  &msg, NULL, 0);
+		osStatus_t status = osMessageQueueGet(selenoidMsgQueueHandle,  &selenoid, NULL, 0);
+		// Perform the work in the selenoid that corresponds.
 
-		// Control message preparation
-		if(status == osOK) {
-			size_t msg_length = sizeof(msg.buffer) - 1;
-	  		JSON_Search( (char *) msg.buffer, msg_length, key1, sizeof(key1)-1, &val, &val_length);
-	  		selenoid.id = atoi(val);
-	  		JSON_Search( (char *) msg.buffer, msg_length, key2, sizeof(key2)-1, &val, &val_length);
-	  		selenoid.duration = atoi(val);
-	  		JSON_Search( (char *) msg.buffer, msg_length, key3, sizeof(key3)-1, &val, &val_length);
-	  		selenoid.frequency = atoi(val);
-	  	}
   }
   /* USER CODE END selenoidControllerHandler */
 }

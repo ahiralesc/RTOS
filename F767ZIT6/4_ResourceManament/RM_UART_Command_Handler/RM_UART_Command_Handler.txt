@@ -1,6 +1,6 @@
 Configuration	RM_UART_Command_Handler
 STM32CubeMX 	6.12.1
-Date	10/20/2024
+Date	10/26/2024
 MCU	STM32F767ZITx
 
 

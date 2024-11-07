@@ -2,10 +2,11 @@
 CAD.formats=
 CAD.pinconfig=
 CAD.provider=
+FREERTOS.BinarySemaphores01=deferredCoordinatorBS,Dynamic,NULL,Available
 FREERTOS.FootprintOK=true
-FREERTOS.IPParameters=Tasks01,Queues01,FootprintOK,configUSE_NEWLIB_REENTRANT
-FREERTOS.Queues01=ctrlMsgQueue,16,uint16_t,0,Dynamic,NULL,NULL;selenoidQueue,16,uint16_t,0,Dynamic,NULL,NULL
-FREERTOS.Tasks01=defaultTask,8,128,StartDefaultTask,Default,NULL,Dynamic,NULL,NULL;coordinator,24,128,coordinatorHandler,Default,NULL,Dynamic,NULL,NULL;selenoidControl,24,128,selenoidControlerHandler,Default,NULL,Dynamic,NULL,NULL
+FREERTOS.IPParameters=Tasks01,Queues01,FootprintOK,configUSE_NEWLIB_REENTRANT,BinarySemaphores01
+FREERTOS.Queues01=selenoidMsgQueue,16,Ctrl_msg,0,Dynamic,NULL,NULL
+FREERTOS.Tasks01=defaultTask,8,128,StartDefaultTask,Default,NULL,Dynamic,NULL,NULL;coordinator,32,128,coordinatorHandler,Default,NULL,Dynamic,NULL,NULL;selenoidControl,24,128,selenoidControllerHandler,Default,NULL,Dynamic,NULL,NULL
 FREERTOS.configUSE_NEWLIB_REENTRANT=1
 File.Version=6
 GPIO.groupedBy=
