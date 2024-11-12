@@ -27,7 +27,7 @@ An example control message is {"id":01,"frequency":30,"duration":01}. The UART r
 ### Processing workflow
 
 ![Trace 1](Img/Monitor.png "Fig 1. Monitor workflow")<br>
-<center>Fig. 1 A collaborative diagram of the monitor pattern.</center> 
+<center>Fig. 1 Collaborative diagram of the monitor pattern.</center> 
 
 ### Comments
 
